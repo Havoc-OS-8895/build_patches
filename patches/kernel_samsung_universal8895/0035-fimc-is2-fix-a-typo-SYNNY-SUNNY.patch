@@ -1,0 +1,27 @@
+From 70a3cff1a3473cd60c9c8222185a39c3547eed2c Mon Sep 17 00:00:00 2001
+From: Jeongtae Park <jtp.park@samsung.com>
+Date: Mon, 26 Mar 2018 11:39:24 +0900
+Subject: [PATCH 35/60] fimc-is2: fix a typo (SYNNY -> SUNNY)
+
+Change-Id: Ieeb22b673ae6d04e41fdb66d042fff5c70491dac
+Signed-off-by: Jeongtae Park <jtp.park@samsung.com>
+---
+ .../exynos/fimc-is2/sensor/module/fimc-is-module-3h7_sunny.h    | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/media/platform/exynos/fimc-is2/sensor/module/fimc-is-module-3h7_sunny.h b/drivers/media/platform/exynos/fimc-is2/sensor/module/fimc-is-module-3h7_sunny.h
+index 3e0d1c4106a1..26b73d10351e 100644
+--- a/drivers/media/platform/exynos/fimc-is2/sensor/module/fimc-is-module-3h7_sunny.h
++++ b/drivers/media/platform/exynos/fimc-is2/sensor/module/fimc-is-module-3h7_sunny.h
+@@ -10,7 +10,7 @@
+  */
+ 
+ #ifndef FIMC_IS_DEVICE_3H7_SUNNY_H
+-#define FIMC_IS_DEVICE_3H7_SYNNY_H
++#define FIMC_IS_DEVICE_3H7_SUNNY_H
+ 
+ #define SENSOR_S5K3H7_SUNNY_INSTANCE	0
+ #define SENSOR_S5K3H7_SUNNY_NAME	SENSOR_NAME_S5K3H7_SUNNY
+-- 
+2.17.1
+

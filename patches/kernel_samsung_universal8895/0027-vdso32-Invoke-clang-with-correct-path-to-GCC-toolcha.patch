@@ -1,0 +1,51 @@
+From f2e3ef95fb89b22ff2139de0493a37ff8a9f7b12 Mon Sep 17 00:00:00 2001
+From: Daniel Mentz <danielmentz@google.com>
+Date: Wed, 20 Feb 2019 16:59:14 -0800
+Subject: [PATCH 27/60] vdso32: Invoke clang with correct path to GCC toolchain
+
+Clang needs to have access to a GCC toolchain which we advertise using
+the command line option --gcc-toolchain=. Clang previously picked the
+wrong toolchain which resulted in the following error message:
+
+/..//bin/as: unrecognized option '-EL'
+
+Bug: 123422077
+Signed-off-by: Daniel Mentz <danielmentz@google.com>
+Change-Id: I3e339dd446b71e2c75eb9e2c186eba715b3771cd
+Signed-off-by: khusika <khusikadhamar@gmail.com>
+---
+ arch/arm64/Makefile               | 4 ++++
+ arch/arm64/kernel/vdso32/Makefile | 2 +-
+ 2 files changed, 5 insertions(+), 1 deletion(-)
+
+diff --git a/arch/arm64/Makefile b/arch/arm64/Makefile
+index 01b9ff25a78e..ec6d7ad37ed2 100644
+--- a/arch/arm64/Makefile
++++ b/arch/arm64/Makefile
+@@ -52,6 +52,10 @@ ifeq ($(CONFIG_COMPAT_VDSO), y)
+   else ifeq ($(cc-name),clang)
+     export CLANG_TRIPLE_ARM32 ?= $(CROSS_COMPILE_ARM32)
+     export CLANG_TARGET_ARM32 := --target=$(notdir $(CLANG_TRIPLE_ARM32:%-=%))
++    export GCC_TOOLCHAIN32_DIR := $(dir $(shell which $(CROSS_COMPILE_ARM32)ld))
++    export GCC_TOOLCHAIN32 := $(realpath $(GCC_TOOLCHAIN32_DIR)/..)
++    export CLANG_PREFIX32 := --prefix=$(GCC_TOOLCHAIN32_DIR)
++    export CLANG_GCC32_TC := --gcc-toolchain=$(GCC_TOOLCHAIN32)
+     export CONFIG_VDSO32 := y
+     vdso32 := -DCONFIG_VDSO32=1
+   else ifeq ($(shell which $(CROSS_COMPILE_ARM32)$(cc-name) 2> /dev/null),)
+diff --git a/arch/arm64/kernel/vdso32/Makefile b/arch/arm64/kernel/vdso32/Makefile
+index 837e877a326b..ceff67976e63 100644
+--- a/arch/arm64/kernel/vdso32/Makefile
++++ b/arch/arm64/kernel/vdso32/Makefile
+@@ -5,7 +5,7 @@
+ # A mix between the arm64 and arm vDSO Makefiles.
+ 
+ ifeq ($(cc-name),clang)
+-  CC_ARM32 := $(CC) $(CLANG_TARGET_ARM32) -no-integrated-as
++  CC_ARM32 := $(CC) $(CLANG_TARGET_ARM32) -no-integrated-as $(CLANG_GCC32_TC) $(CLANG_PREFIX32)
+ else
+   CC_ARM32 := $(CROSS_COMPILE_ARM32)$(cc-name)
+ endif
+-- 
+2.17.1
+

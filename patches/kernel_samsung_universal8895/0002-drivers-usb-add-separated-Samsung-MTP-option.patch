@@ -1,0 +1,55 @@
+From 3e2d4187daea0b2b88d0d050cfad3e62f05277f9 Mon Sep 17 00:00:00 2001
+From: Jesse Chan <jc@lineageos.org>
+Date: Tue, 17 Jul 2018 20:31:43 +0200
+Subject: [PATCH 02/60] drivers: usb: add separated Samsung MTP option
+
+Signed-off-by: BlackMesa123 <brother12@hotmail.it>
+---
+ drivers/usb/gadget/Kconfig           | 9 +++++++++
+ drivers/usb/gadget/function/Makefile | 8 ++++----
+ 2 files changed, 13 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/usb/gadget/Kconfig b/drivers/usb/gadget/Kconfig
+index 6da81ed52f5b..62a15203c7a3 100644
+--- a/drivers/usb/gadget/Kconfig
++++ b/drivers/usb/gadget/Kconfig
+@@ -144,6 +144,15 @@ config USB_ANDROID_SAMSUNG_COMPOSITE
+ 	  Multi Configuration.
+ 	  If you enable this option, android composite will be changed.
+ 
++config USB_ANDROID_SAMSUNG_MTP
++	boolean "Samsung MTP function"
++	depends on USB_G_ANDROID && !SEC_FACTORY
++	help
++	  Provides Media Transfer Protocol (MTP) support
++	  for samsung gadget driver.
++	  If you enable this option,
++	  google mtp will be changed to samsung mtp.
++
+ config USB_DUN_SUPPORT
+ 	boolean "DUN support function"
+ 	depends on USB_G_ANDROID
+diff --git a/drivers/usb/gadget/function/Makefile b/drivers/usb/gadget/function/Makefile
+index 05a6618a3e9f..76d902bf77dc 100644
+--- a/drivers/usb/gadget/function/Makefile
++++ b/drivers/usb/gadget/function/Makefile
+@@ -48,12 +48,12 @@ usb_f_dm-y			:= f_dm.o
+ obj-$(CONFIG_USB_CONFIGFS_F_DM)	+= usb_f_dm.o
+ usb_f_adb-y			:= f_adb.o
+ obj-$(CONFIG_USB_CONFIGFS_F_ADB)+= usb_f_adb.o
+-ifeq ($(CONFIG_SEC_FACTORY),y)
+-	usb_f_mtp-y                     := f_mtp.o
+-	obj-$(CONFIG_USB_F_MTP)         += usb_f_mtp.o
+-else
++ifeq ($(CONFIG_USB_ANDROID_SAMSUNG_MTP),y)
+ 	usb_f_mtp_samsung-y                     := f_mtp_samsung.o
+ 	obj-$(CONFIG_USB_F_MTP)         += usb_f_mtp_samsung.o
++else
++	usb_f_mtp-y                     := f_mtp.o
++	obj-$(CONFIG_USB_F_MTP)         += usb_f_mtp.o
+ endif
+ usb_f_ptp-y                     := f_ptp.o
+ obj-$(CONFIG_USB_F_PTP)         += usb_f_ptp.o
+-- 
+2.17.1
+

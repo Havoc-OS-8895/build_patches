@@ -1,0 +1,308 @@
+From d007abd0bdcb8624bafd5000dc9c740a7ef77eb9 Mon Sep 17 00:00:00 2001
+From: Diep Quynh <remilia.1505@gmail.com>
+Date: Wed, 27 Nov 2019 14:12:21 +0700
+Subject: [PATCH 3/7] ramdisk: Adapt EAS ramdisk
+
+Change-Id: I97644825278ff2e2d783e08cee76849cbd42bd3a
+Signed-off-by: Diep Quynh <remilia.1505@gmail.com>
+---
+ ramdisk/etc/init.samsungexynos8895.rc | 230 ++++++++++++++------------
+ 1 file changed, 125 insertions(+), 105 deletions(-)
+
+diff --git a/ramdisk/etc/init.samsungexynos8895.rc b/ramdisk/etc/init.samsungexynos8895.rc
+index 1cf0748..3bf4eb4 100644
+--- a/ramdisk/etc/init.samsungexynos8895.rc
++++ b/ramdisk/etc/init.samsungexynos8895.rc
+@@ -31,6 +31,45 @@ on init
+     #Google FRP solution
+     symlink /dev/block/platform/11120000.ufs/by-name/PERSISTENT /dev/block/persistent
+ 
++    # EAS stune boosting interfaces
++    chown system system /dev/stune/top-app/schedtune.boost
++    chown system system /dev/stune/top-app/schedtune.prefer_idle
++    chown system system /dev/stune/top-app/schedtune.prefer_perf
++    chown system system /dev/stune/top-app/cgroup.procs
++
++    chown system system /dev/stune/foreground/schedtune.boost
++    chown system system /dev/stune/foreground/schedtune.prefer_idle
++    chown system system /dev/stune/foreground/schedtune.prefer_perf
++    chown system system /dev/stune/foreground/cgroup.procs
++
++    chown system system /dev/stune/background/schedtune.boost
++    chown system system /dev/stune/background/schedtune.prefer_idle
++    chown system system /dev/stune/background/schedtune.prefer_perf
++    chown system system /dev/stune/background/cgroup.procs
++
++    chown system system /dev/stune/schedtune.boost
++    chown system system /dev/stune/schedtune.prefer_idle
++    chown system system /dev/stune/schedtune.prefer_perf
++    chown system system /dev/stune/cgroup.procs
++
++    write /dev/stune/top-app/schedtune.boost 5
++    write /dev/stune/top-app/schedtune.prefer_idle 1
++    write /dev/stune/top-app/schedtune.prefer_perf 0
++    write /dev/stune/top-app/schedtune.util_est_en 1
++    write /dev/stune/top-app/schedtune.ontime_en 1
++
++    write /dev/stune/foreground/schedtune.boost 0
++    write /dev/stune/foreground/schedtune.prefer_idle 1
++    write /dev/stune/foreground/schedtune.prefer_perf 0
++    write /dev/stune/foreground/schedtune.util_est_en 1
++    write /dev/stune/foreground/schedtune.ontime_en 0
++
++    write /dev/stune/background/schedtune.boost 0
++    write /dev/stune/background/schedtune.prefer_idle 0
++    write /dev/stune/background/schedtune.prefer_perf 0
++
++    write /dev/stune/schedtune.boost 0
++
+ on post-fs
+     # set RLIMIT_MEMLOCK to 64MB
+     setrlimit 8 67108864 67108864
+@@ -168,72 +207,6 @@ on boot
+     chown system radio /sys/devices/system/sec_os_ctrl/migrate_os
+     chmod 0664 /sys/devices/system/sec_os_ctrl/migrate_os
+ 
+-    # Change permission for interactive governor
+-    chown system system /sys/devices/system/cpu/cpu0/cpufreq/interactive/timer_rate
+-    chmod 0660 /sys/devices/system/cpu/cpu0/cpufreq/interactive/timer_rate
+-    chown system system /sys/devices/system/cpu/cpu0/cpufreq/interactive/timer_slack
+-    chmod 0660 /sys/devices/system/cpu/cpu0/cpufreq/interactive/timer_slack
+-    chown system system /sys/devices/system/cpu/cpu0/cpufreq/interactive/min_sample_time
+-    chmod 0660 /sys/devices/system/cpu/cpu0/cpufreq/interactive/min_sample_time
+-    chown system system /sys/devices/system/cpu/cpu0/cpufreq/interactive/hispeed_freq
+-    chmod 0660 /sys/devices/system/cpu/cpu0/cpufreq/interactive/hispeed_freq
+-    chown system system /sys/devices/system/cpu/cpu0/cpufreq/interactive/target_loads
+-    chmod 0660 /sys/devices/system/cpu/cpu0/cpufreq/interactive/target_loads
+-    chown system system /sys/devices/system/cpu/cpu0/cpufreq/interactive/go_hispeed_load
+-    chmod 0660 /sys/devices/system/cpu/cpu0/cpufreq/interactive/go_hispeed_load
+-    chown system system /sys/devices/system/cpu/cpu0/cpufreq/interactive/above_hispeed_delay
+-    chmod 0660 /sys/devices/system/cpu/cpu0/cpufreq/interactive/above_hispeed_delay
+-    chown system system /sys/devices/system/cpu/cpu0/cpufreq/interactive/boost
+-    chmod 0660 /sys/devices/system/cpu/cpu0/cpufreq/interactive/boost
+-    chown system system /sys/devices/system/cpu/cpu0/cpufreq/interactive/boostpulse
+-    chown system system /sys/devices/system/cpu/cpu0/cpufreq/interactive/input_boost
+-    chmod 0660 /sys/devices/system/cpu/cpu0/cpufreq/interactive/input_boost
+-    chown system system /sys/devices/system/cpu/cpu0/cpufreq/interactive/boostpulse_duration
+-    chmod 0660 /sys/devices/system/cpu/cpu0/cpufreq/interactive/boostpulse_duration
+-    chown system system /sys/devices/system/cpu/cpu0/cpufreq/interactive/io_is_busy
+-    chmod 0660 /sys/devices/system/cpu/cpu0/cpufreq/interactive/io_is_busy
+-    chown system system /sys/devices/system/cpu/cpu0/cpufreq/interactive/param_index
+-    chmod 0660 /sys/devices/system/cpu/cpu0/cpufreq/interactive/param_index
+-    chown system system /sys/devices/system/cpu/cpu0/cpufreq/interactive/mode
+-    chmod 0660 /sys/devices/system/cpu/cpu0/cpufreq/interactive/mode
+-
+-    chown system system /sys/devices/system/cpu/cpu4/cpufreq/interactive/timer_rate
+-    chmod 0660 /sys/devices/system/cpu/cpu4/cpufreq/interactive/timer_rate
+-    chown system system /sys/devices/system/cpu/cpu4/cpufreq/interactive/timer_slack
+-    chmod 0660 /sys/devices/system/cpu/cpu4/cpufreq/interactive/timer_slack
+-    chown system system /sys/devices/system/cpu/cpu4/cpufreq/interactive/min_sample_time
+-    chmod 0660 /sys/devices/system/cpu/cpu4/cpufreq/interactive/min_sample_time
+-    chown system system /sys/devices/system/cpu/cpu4/cpufreq/interactive/hispeed_freq
+-    chmod 0660 /sys/devices/system/cpu/cpu4/cpufreq/interactive/hispeed_freq
+-    chown system system /sys/devices/system/cpu/cpu4/cpufreq/interactive/target_loads
+-    chmod 0660 /sys/devices/system/cpu/cpu4/cpufreq/interactive/target_loads
+-    chown system system /sys/devices/system/cpu/cpu4/cpufreq/interactive/go_hispeed_load
+-    chmod 0660 /sys/devices/system/cpu/cpu4/cpufreq/interactive/go_hispeed_load
+-    chown system system /sys/devices/system/cpu/cpu4/cpufreq/interactive/above_hispeed_delay
+-    chmod 0660 /sys/devices/system/cpu/cpu4/cpufreq/interactive/above_hispeed_delay
+-    chown system system /sys/devices/system/cpu/cpu4/cpufreq/interactive/boost
+-    chmod 0660 /sys/devices/system/cpu/cpu4/cpufreq/interactive/boost
+-    chown system system /sys/devices/system/cpu/cpu4/cpufreq/interactive/boostpulse
+-    chown system system /sys/devices/system/cpu/cpu4/cpufreq/interactive/input_boost
+-    chmod 0660 /sys/devices/system/cpu/cpu4/cpufreq/interactive/input_boost
+-    chown system system /sys/devices/system/cpu/cpu4/cpufreq/interactive/boostpulse_duration
+-    chmod 0660 /sys/devices/system/cpu/cpu4/cpufreq/interactive/boostpulse_duration
+-    chown system system /sys/devices/system/cpu/cpu4/cpufreq/interactive/io_is_busy
+-    chmod 0660 /sys/devices/system/cpu/cpu4/cpufreq/interactive/io_is_busy
+-    chown system system /sys/devices/system/cpu/cpu4/cpufreq/interactive/param_index
+-    chmod 0660 /sys/devices/system/cpu/cpu4/cpufreq/interactive/param_index
+-    chown system system /sys/devices/system/cpu/cpu4/cpufreq/interactive/mode
+-    chmod 0660 /sys/devices/system/cpu/cpu4/cpufreq/interactive/mode
+-
+-    #HMP
+-    chown system system /sys/kernel/hmp/up_threshold
+-    chown system system /sys/kernel/hmp/family_boost
+-    chown system system /sys/module/cpuidle/parameters/priv_disable
+-
+-    chmod 0664 /sys/kernel/hmp/up_threshold
+-    chmod 0664 /sys/kernel/hmp/family_boost
+-    chmod 0664 /sys/module/cpuidle/parameters/priv_disable
+-
+     #CPUFREQ
+     chown system system /sys/power/cpufreq_min_limit
+     chown system system /sys/power/cpufreq_max_limit
+@@ -251,16 +224,10 @@ on boot
+     chown system system /sys/devices/system/cpu/cpu6/online
+     chown system system /sys/devices/system/cpu/cpu7/online
+ 
+-    # CPUFreq limit without hmp boost
+-    chown radio system /sys/power/cpufreq_min_limit_wo_boost
+-    chmod 0664 /sys/power/cpufreq_min_limit_wo_boost
+-
+     # CPU Idle
+     chown system system /sys/module/cpuidle_exynos64/parameters/enable_mask
+-
+-    # Permissions for wakeup_to_idle_cpu
+-    chown system system /sys/kernel/hmp/wakeup_to_idle_cpu
+-    chmod 0664 /sys/kernel/hmp/wakeup_to_idle_cpu
++    chown system system /sys/module/cpuidle/parameters/priv_disable
++    chmod 0664 /sys/module/cpuidle/parameters/priv_disable
+ 
+ # SEC_PM sysfs
+     # DVFS & Hotplug
+@@ -307,31 +274,15 @@ on boot
+     chmod 0664 /sys/class/devfreq/17000050.devfreq_cam/max_freq
+ 
+     # mali dvfs node
+-    chown radio system /sys/devices/platform/13900000.mali/dvfs_table
+-    chmod 0664 /sys/devices/platform/13900000.mali/dvfs_table
+-    chown radio system /sys/devices/platform/13900000.mali/dvfs_min_lock
+-    chmod 0664 /sys/devices/platform/13900000.mali/dvfs_min_lock
+-    chown radio system /sys/devices/platform/13900000.mali/dvfs_max_lock
+-    chmod 0664 /sys/devices/platform/13900000.mali/dvfs_max_lock
++    chown system system /sys/kernel/gpu/gpu_max_clock
++    chmod 0664 /sys/kernel/gpu/gpu_max_clock
++    chown system system /sys/kernel/gpu/gpu_min_clock
++    chmod 0664 /sys/kernel/gpu/gpu_min_clock
+ 
+     # Cstate node
+     chown radio system /sys/module/cpuidle/parameters/off
+     chmod 0664 /sys/module/cpuidle/parameters/off
+ 
+-    # Permissions for input_booster
+-    chown system radio /sys/class/input_booster/level
+-    chown system radio /sys/class/input_booster/head
+-    chown system radio /sys/class/input_booster/tail
+-    chown system radio /sys/class/input_booster/touchkey/level
+-    chown system radio /sys/class/input_booster/touchkey/freq
+-    chown system radio /sys/class/input_booster/touchkey/time
+-    chmod 0664 /sys/class/input_booster/level
+-    chmod 0664 /sys/class/input_booster/head
+-    chmod 0664 /sys/class/input_booster/tail
+-    chmod 0664 /sys/class/input_booster/touchkey/level
+-    chmod 0664 /sys/class/input_booster/touchkey/freq
+-    chmod 0664 /sys/class/input_booster/touchkey/time
+-
+     # RTC reset status
+     chown system system /sys/power/rtc_status
+     chmod 0444 /sys/power/rtc_status
+@@ -547,28 +498,96 @@ on boot
+     chmod 0664 /dev/cpuset/cached/cpus
+     chmod 0664 /dev/cpuset/abnormal/cpus
+ 
+-# CPUSET(8895)
++# CPUSET(9810)
+     chown system system /dev/cpuset/top-app/cpus
+     chown system system /dev/cpuset/foreground/cpus
+     chown system system /dev/cpuset/background/cpus
+     chown system system /dev/cpuset/system-background/cpus
+-    chown system system /dev/cpuset/surfaceflinger/cpus
++    chown system system /dev/cpuset/restricted/cpus
++    chown system system /dev/cpuset/cpus
++    chown radio system /dev/stune/top-app/schedtune.prefer_perf
++    chown radio system /dev/stune/top-app/schedtune.prefer_idle
++    chown radio system /dev/stune/top-app/schedtune.band
++    chown radio system /dev/stune/top-app/schedtune.boost
++    chown radio system /dev/stune/top-app/schedtune.util_est_en
++    chown radio system /dev/stune/top-app/schedtune.ontime_en
++    chown radio system /dev/stune/foreground/schedtune.prefer_perf
++    chown radio system /dev/stune/foreground/schedtune.prefer_idle
++    chown radio system /dev/stune/foreground/schedtune.band;
++    chown radio system /dev/stune/foreground/schedtune.boost
++    chown radio system /dev/stune/foreground/schedtune.util_est_en
++    chown radio system /dev/stune/foreground/schedtune.ontime_en
++    chown radio system /dev/stune/background/schedtune.prefer_perf
++    chown radio system /dev/stune/background/schedtune.prefer_idle
++    chown radio system /dev/stune/background/schedtune.band
++    chown radio system /dev/stune/background/schedtune.boost
++    chown radio system /dev/stune/background/schedtune.util_est_en
++    chown radio system /dev/stune/background/schedtune.ontime_en
++    chown radio system /sys/kernel/ems/global_boost
++    chown radio system /sys/kernel/ems/ontime/coregroup0/lower_boundary
++    chown radio system /sys/kernel/ems/ontime/coregroup0/upper_boundary
++    chown radio system /sys/kernel/ems/ontime/coregroup0/coverage_ratio
++    chown radio system /sys/kernel/ems/ontime/coregroup1/lower_boundary
++    chown radio system /sys/kernel/ems/ontime/coregroup1/upper_boundary
++    chown radio system /sys/kernel/ems/ontime/coregroup1/coverage_ratio
++    chown radio system /sys/kernel/ems/lbt/overutil_ratio_level0
++    chown radio system /sys/kernel/ems/lbt/overutil_ratio_level1
++    chown radio system /sys/devices/system/cpu/cpufreq/policy0/schedutil/freqvar_boost
++    chown radio system /sys/devices/system/cpu/cpufreq/policy0/schedutil/freqvar_up_rate_limit
++    chown radio system /sys/devices/system/cpu/cpufreq/policy0/schedutil/freqvar_down_rate_limit
++    chown radio system /sys/devices/system/cpu/cpufreq/policy0/schedutil/freqvar_upscale_ratio
++    chown radio system /sys/devices/system/cpu/cpufreq/policy4/schedutil/freqvar_boost
++    chown radio system /sys/devices/system/cpu/cpufreq/policy4/schedutil/freqvar_up_rate_limit
++    chown radio system /sys/devices/system/cpu/cpufreq/policy4/schedutil/freqvar_down_rate_limit
++    chown radio system /sys/devices/system/cpu/cpufreq/policy4/schedutil/freqvar_upscale_ratio
++
+     chmod 664 /dev/cpuset/top-app/cpus
+     chmod 664 /dev/cpuset/foreground/cpus
+     chmod 664 /dev/cpuset/background/cpus
+     chmod 664 /dev/cpuset/system-background/cpus
+-    chmod 664 /dev/cpuset/surfaceflinger/cpus
++    chmod 664 /dev/cpuset/restricted/cpus
++    chmod 664 /dev/cpuset/cpus
++    chmod 0664 /dev/stune/top-app/schedtune.prefer_perf
++    chmod 0664 /dev/stune/top-app/schedtune.prefer_idle
++    chmod 0664 /dev/stune/top-app/schedtune.band
++    chmod 0664 /dev/stune/top-app/schedtune.boost
++    chmod 0664 /dev/stune/top-app/schedtune.util_est_en
++    chmod 0664 /dev/stune/top-app/schedtune.ontime_en
++    chmod 0664 /dev/stune/foreground/schedtune.prefer_perf
++    chmod 0664 /dev/stune/foreground/schedtune.prefer_idle
++    chmod 0664 /dev/stune/foreground/schedtune.band;
++    chmod 0664 /dev/stune/foreground/schedtune.boost
++    chmod 0664 /dev/stune/foreground/schedtune.util_est_en
++    chmod 0664 /dev/stune/foreground/schedtune.ontime_en
++    chmod 0664 /dev/stune/background/schedtune.prefer_perf
++    chmod 0664 /dev/stune/background/schedtune.prefer_idle
++    chmod 0664 /dev/stune/background/schedtune.band
++    chmod 0664 /dev/stune/background/schedtune.boost
++    chmod 0664 /dev/stune/background/schedtune.util_est_en
++    chmod 0664 /dev/stune/background/schedtune.ontime_en
++    chmod 0664 /sys/kernel/ems/global_boost
++    chmod 0664 /sys/kernel/ems/ontime/coregroup0/lower_boundary
++    chmod 0664 /sys/kernel/ems/ontime/coregroup0/upper_boundary
++    chmod 0664 /sys/kernel/ems/ontime/coregroup0/coverage_ratio
++    chmod 0664 /sys/kernel/ems/ontime/coregroup1/lower_boundary
++    chmod 0664 /sys/kernel/ems/ontime/coregroup1/upper_boundary
++    chmod 0664 /sys/kernel/ems/ontime/coregroup1/coverage_ratio
++    chmod 0664 /sys/kernel/ems/lbt/overutil_ratio_level0
++    chmod 0664 /sys/kernel/ems/lbt/overutil_ratio_level1
++    chmod 0664 /sys/devices/system/cpu/cpufreq/policy0/schedutil/freqvar_boost
++    chmod 0664 /sys/devices/system/cpu/cpufreq/policy0/schedutil/freqvar_up_rate_limit
++    chmod 0664 /sys/devices/system/cpu/cpufreq/policy0/schedutil/freqvar_down_rate_limit
++    chmod 0664 /sys/devices/system/cpu/cpufreq/policy0/schedutil/freqvar_upscale_ratio
++    chmod 0664 /sys/devices/system/cpu/cpufreq/policy4/schedutil/freqvar_boost
++    chmod 0664 /sys/devices/system/cpu/cpufreq/policy4/schedutil/freqvar_up_rate_limit
++    chmod 0664 /sys/devices/system/cpu/cpufreq/policy4/schedutil/freqvar_down_rate_limit
++    chmod 0664 /sys/devices/system/cpu/cpufreq/policy4/schedutil/freqvar_upscale_ratio
++
+     write /dev/cpuset/top-app/cpus 0-7
+-    write /dev/cpuset/top-app/mems 0
+-    write /dev/cpuset/top-app/family_boost 1
+     write /dev/cpuset/foreground/cpus 0-2,4-7
+-    write /dev/cpuset/foreground/mems 0
+     write /dev/cpuset/background/cpus 0-1
+-    write /dev/cpuset/background/mems 0
+-    write /dev/cpuset/system-background/cpus 0-2
+-    write /dev/cpuset/system-background/mems 0
+-    write /dev/cpuset/surfaceflinger/cpus 0-2
+-    write /dev/cpuset/surfaceflinger/mems 0
++    write /dev/cpuset/restricted/cpus 0-2
++    write /dev/cpuset/system-background/cpus 0-3
+ 
+ # ZRAM setup
+     write /sys/block/zram0/comp_algorithm lz4
+@@ -971,6 +990,7 @@ on property:sys.boot_completed=1
+     swapon_all /fstab.${ro.hardware}
+     setprop security.semdaemonfinish 0
+     start sem_daemon
++
+     # Change permission for A-Box firmware logs file & GPR dump
+     chown audioserver system /sys/kernel/debug/abox/log-00
+     chown audioserver system /sys/devices/platform/13e50000.abox/13e50000.abox:abox_debug@0/gpr
+-- 
+2.17.1
+

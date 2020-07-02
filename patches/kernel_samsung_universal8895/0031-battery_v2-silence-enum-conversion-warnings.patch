@@ -1,0 +1,114 @@
+From 714db48c86817fe32503947f0fed26e78f36aa41 Mon Sep 17 00:00:00 2001
+From: Michael Benedict <michaelbt@live.com>
+Date: Mon, 3 Jun 2019 18:21:08 +1000
+Subject: [PATCH 31/60] battery_v2: silence enum-conversion warnings
+
+Signed-off-by: Michael Benedict <michaelbt@live.com>
+---
+ drivers/battery_v2/include/sec_charging_common.h | 3 ++-
+ drivers/battery_v2/max77865_charger.c            | 4 ++--
+ drivers/battery_v2/mfc_charger.c                 | 4 ++--
+ drivers/battery_v2/sec_battery.c                 | 8 ++++----
+ 4 files changed, 10 insertions(+), 9 deletions(-)
+
+diff --git a/drivers/battery_v2/include/sec_charging_common.h b/drivers/battery_v2/include/sec_charging_common.h
+index 172c0985afa9..ec9ce8b5f89d 100644
+--- a/drivers/battery_v2/include/sec_charging_common.h
++++ b/drivers/battery_v2/include/sec_charging_common.h
+@@ -1031,7 +1031,8 @@ static inline struct power_supply *get_power_supply_by_name(char *name)
+ 		ret = -ENOENT;	\
+ 	} else {	\
+ 		if (psy->desc->function##_property != NULL) { \
+-			ret = psy->desc->function##_property(psy, (property), &(value)); \
++			ret = psy->desc->function##_property(psy, \
++				(enum power_supply_property) (property), &(value)); \
+ 			if (ret < 0) {	\
+ 				pr_err("%s: Fail to %s "#function" (%d=>%d)\n", \
+ 						__func__, name, (property), ret);	\
+diff --git a/drivers/battery_v2/max77865_charger.c b/drivers/battery_v2/max77865_charger.c
+index da10d164ce93..a6ae1d4b3f77 100644
+--- a/drivers/battery_v2/max77865_charger.c
++++ b/drivers/battery_v2/max77865_charger.c
+@@ -895,7 +895,7 @@ static int max77865_chg_get_property(struct power_supply *psy,
+ {
+ 	struct max77865_charger_data *charger = power_supply_get_drvdata(psy);
+ 	u8 reg_data;
+-	enum power_supply_ext_property ext_psp = psp;
++	enum power_supply_ext_property ext_psp = (enum power_supply_ext_property)psp;
+ 
+ 	switch (psp) {
+ 	case POWER_SUPPLY_PROP_ONLINE:
+@@ -1031,7 +1031,7 @@ static int max77865_chg_set_property(struct power_supply *psy,
+ 	u8 reg = 0;
+ 	static u8 chg_int_state;
+ 	int buck_state = ENABLE;
+-	enum power_supply_ext_property ext_psp = psp;
++	enum power_supply_ext_property ext_psp = (enum power_supply_ext_property)psp;
+ 
+ 	switch (psp) {
+ 	/* val->intval : type */
+diff --git a/drivers/battery_v2/mfc_charger.c b/drivers/battery_v2/mfc_charger.c
+index 4dfdd30e5ff5..21b205679cf9 100644
+--- a/drivers/battery_v2/mfc_charger.c
++++ b/drivers/battery_v2/mfc_charger.c
+@@ -1774,7 +1774,7 @@ static int mfc_chg_get_property(struct power_supply *psy,
+ 		union power_supply_propval *val)
+ {
+ 	struct mfc_charger_data *charger = power_supply_get_drvdata(psy);
+-	enum power_supply_ext_property ext_psp = psp;
++	enum power_supply_ext_property ext_psp = (enum power_supply_ext_property) psp;
+ //	union power_supply_propval value;
+ 	u8 mst_mode;
+ 	u8 reg_data;
+@@ -2020,7 +2020,7 @@ static int mfc_chg_set_property(struct power_supply *psy,
+ 		const union power_supply_propval *val)
+ {
+ 	struct mfc_charger_data *charger = power_supply_get_drvdata(psy);
+-	enum power_supply_ext_property ext_psp = psp;
++	enum power_supply_ext_property ext_psp = (enum power_supply_ext_property) psp;
+ 	int vout, vrect, iout, freq, i = 0;
+ 	u8 tmp = 0;
+ 	/* int ret; */
+diff --git a/drivers/battery_v2/sec_battery.c b/drivers/battery_v2/sec_battery.c
+index d761f4519eb1..667b68f1b222 100644
+--- a/drivers/battery_v2/sec_battery.c
++++ b/drivers/battery_v2/sec_battery.c
+@@ -6242,7 +6242,7 @@ static int sec_bat_set_property(struct power_supply *psy,
+ 	int current_cable_type = SEC_BATTERY_CABLE_NONE;
+ 	int full_check_type = SEC_BATTERY_FULLCHARGED_NONE;
+ 	union power_supply_propval value = {0, };
+-	enum power_supply_ext_property ext_psp = psp;
++	enum power_supply_ext_property ext_psp = (enum power_supply_ext_property) psp;
+ 
+ 	dev_dbg(battery->dev,
+ 		"%s: (%d,%d)\n", __func__, psp, val->intval);
+@@ -6492,7 +6492,7 @@ static int sec_bat_get_property(struct power_supply *psy,
+ {
+ 	struct sec_battery_info *battery = power_supply_get_drvdata(psy);
+ 	union power_supply_propval value = {0, };
+-	enum power_supply_ext_property ext_psp = psp;
++	enum power_supply_ext_property ext_psp = (enum power_supply_ext_property) psp;
+ 
+ 	switch (psp) {
+ 	case POWER_SUPPLY_PROP_STATUS:
+@@ -6739,7 +6739,7 @@ static int sec_ac_get_property(struct power_supply *psy,
+ 			       union power_supply_propval *val)
+ {
+ 	struct sec_battery_info *battery = power_supply_get_drvdata(psy);
+-	enum power_supply_ext_property ext_psp = psp;
++	enum power_supply_ext_property ext_psp = (enum power_supply_ext_property) psp;
+ 
+ 	switch (psp) {
+ 	case POWER_SUPPLY_PROP_ONLINE:
+@@ -6850,7 +6850,7 @@ static int sec_wireless_set_property(struct power_supply *psy,
+ 				const union power_supply_propval *val)
+ {
+ 	struct sec_battery_info *battery = power_supply_get_drvdata(psy);
+-	enum power_supply_ext_property ext_psp = psp;
++	enum power_supply_ext_property ext_psp = (enum power_supply_ext_property) psp;
+ 
+ 	switch (psp) {
+ 	case POWER_SUPPLY_PROP_ONLINE:
+-- 
+2.17.1
+

@@ -1,0 +1,82 @@
+From 6df610f9b8667bac63ada3dd402feec2d6dae238 Mon Sep 17 00:00:00 2001
+From: Michael Benedict <michaelbt@live.com>
+Date: Mon, 3 Jun 2019 21:24:45 +1000
+Subject: [PATCH 44/60] drivers: fimc-is2: silence enum-conversion warnings
+
+Signed-off-by: Michael Benedict <michaelbt@live.com>
+---
+ .../platform/exynos/fimc-is2/fimc-is-framemgr.h      | 12 +++++-------
+ .../exynos/fimc-is2/hardware/fimc-is-hw-control.c    |  6 +++---
+ .../exynos/fimc-is2/hardware/fimc-is-hw-control.h    |  2 +-
+ 3 files changed, 9 insertions(+), 11 deletions(-)
+
+diff --git a/drivers/media/platform/exynos/fimc-is2/fimc-is-framemgr.h b/drivers/media/platform/exynos/fimc-is2/fimc-is-framemgr.h
+index dd37cb2760a5..6b1a22ea7bbe 100644
+--- a/drivers/media/platform/exynos/fimc-is2/fimc-is-framemgr.h
++++ b/drivers/media/platform/exynos/fimc-is2/fimc-is-framemgr.h
+@@ -129,13 +129,11 @@ enum fimc_is_frame_state {
+ 	FS_INVALID
+ };
+ 
+-enum fimc_is_hw_frame_state {
+-	FS_HW_FREE,
+-	FS_HW_REQUEST,
+-	FS_HW_CONFIGURE,
+-	FS_HW_WAIT_DONE,
+-	FS_HW_INVALID
+-};
++#define FS_HW_FREE	FS_FREE
++#define FS_HW_REQUEST	FS_REQUEST
++#define FS_HW_CONFIGURE	FS_PROCESS
++#define FS_HW_WAIT_DONE	FS_COMPLETE
++#define FS_HW_INVALID	FS_INVALID
+ 
+ #define NR_FRAME_STATE FS_INVALID
+ 
+diff --git a/drivers/media/platform/exynos/fimc-is2/hardware/fimc-is-hw-control.c b/drivers/media/platform/exynos/fimc-is2/hardware/fimc-is-hw-control.c
+index 7ad970a8a382..e7d0b022168b 100644
+--- a/drivers/media/platform/exynos/fimc-is2/hardware/fimc-is-hw-control.c
++++ b/drivers/media/platform/exynos/fimc-is2/hardware/fimc-is-hw-control.c
+@@ -318,7 +318,7 @@ void print_all_hw_frame_count(struct fimc_is_hardware *hardware)
+ }
+ 
+ void fimc_is_hardware_flush_frame(struct fimc_is_hw_ip *hw_ip,
+-	enum fimc_is_hw_frame_state state,
++	enum fimc_is_frame_state state,
+ 	enum ShotErrorType done_type)
+ {
+ 	int ret = 0;
+@@ -1729,7 +1729,7 @@ int fimc_is_hardware_process_start(struct fimc_is_hardware *hardware, u32 instan
+ 
+ static int flush_frames_in_instance(struct fimc_is_hw_ip *hw_ip,
+ 	struct fimc_is_framemgr *framemgr, u32 instance,
+-	enum fimc_is_hw_frame_state state, enum ShotErrorType done_type)
++	enum fimc_is_frame_state state, enum ShotErrorType done_type)
+ {
+ 	int retry = 150;
+ 	struct fimc_is_frame *frame;
+@@ -1793,7 +1793,7 @@ void fimc_is_hardware_force_stop(struct fimc_is_hardware *hardware,
+ 	int ret = 0;
+ 	struct fimc_is_framemgr *framemgr;
+ 	struct fimc_is_framemgr *framemgr_late;
+-	enum fimc_is_hw_frame_state state;
++	enum fimc_is_frame_state state;
+ 
+ 	BUG_ON(!hw_ip);
+ 
+diff --git a/drivers/media/platform/exynos/fimc-is2/hardware/fimc-is-hw-control.h b/drivers/media/platform/exynos/fimc-is2/hardware/fimc-is-hw-control.h
+index 5dabcdb963d6..5780f2ca7b2d 100644
+--- a/drivers/media/platform/exynos/fimc-is2/hardware/fimc-is-hw-control.h
++++ b/drivers/media/platform/exynos/fimc-is2/hardware/fimc-is-hw-control.h
+@@ -378,7 +378,7 @@ struct fimc_is_hardware {
+ 
+ u32 get_hw_id_from_group(u32 group_id);
+ void fimc_is_hardware_flush_frame(struct fimc_is_hw_ip *hw_ip,
+-	enum fimc_is_hw_frame_state state,
++	enum fimc_is_frame_state state,
+ 	enum ShotErrorType done_type);
+ int fimc_is_hardware_probe(struct fimc_is_hardware *hardware,
+ 	struct fimc_is_interface *itf, struct fimc_is_interface_ischain *itfc);
+-- 
+2.17.1
+

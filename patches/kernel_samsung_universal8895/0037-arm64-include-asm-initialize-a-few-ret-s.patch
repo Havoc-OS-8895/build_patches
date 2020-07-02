@@ -1,0 +1,60 @@
+From 1a4bd435a0ea23f82bef4c01b37c3ac12ebc6993 Mon Sep 17 00:00:00 2001
+From: Yaroslav Furman <yaro330@gmail.com>
+Date: Fri, 22 Jun 2018 20:41:38 +0300
+Subject: [PATCH 37/60] arm64: include: asm: initialize a few ret(-s)
+
+Fixes -Wsometimes-uninitialized that just
+fill up build log.
+Signed-off-by: Yaroslav Furman <yaro330@gmail.com>
+---
+ arch/arm64/include/asm/arch_timer.h | 2 +-
+ arch/arm64/include/asm/percpu.h     | 6 +++---
+ 2 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/arch/arm64/include/asm/arch_timer.h b/arch/arm64/include/asm/arch_timer.h
+index d5747d873710..b2fcadb1cd8d 100644
+--- a/arch/arm64/include/asm/arch_timer.h
++++ b/arch/arm64/include/asm/arch_timer.h
+@@ -61,7 +61,7 @@ void arch_timer_reg_write_cp15(int access, enum arch_timer_reg reg, u32 val)
+ static __always_inline
+ u32 arch_timer_reg_read_cp15(int access, enum arch_timer_reg reg)
+ {
+-	u32 val;
++	u32 val = 0;
+ 
+ 	if (access == ARCH_TIMER_PHYS_ACCESS) {
+ 		switch (reg) {
+diff --git a/arch/arm64/include/asm/percpu.h b/arch/arm64/include/asm/percpu.h
+index b8beb45b8a20..3df947099348 100644
+--- a/arch/arm64/include/asm/percpu.h
++++ b/arch/arm64/include/asm/percpu.h
+@@ -42,7 +42,7 @@ static inline unsigned long __my_cpu_offset(void)
+ static inline unsigned long __percpu_##op(void *ptr,			\
+ 			unsigned long val, int size)			\
+ {									\
+-	unsigned long loop, ret;					\
++	unsigned long loop, ret = 0;					\
+ 									\
+ 	switch (size) {							\
+ 	case 1:								\
+@@ -100,7 +100,7 @@ PERCPU_OP(or, orr)
+ 
+ static inline unsigned long __percpu_read(void *ptr, int size)
+ {
+-	unsigned long ret;
++	unsigned long ret = 0;
+ 
+ 	switch (size) {
+ 	case 1:
+@@ -146,7 +146,7 @@ static inline void __percpu_write(void *ptr, unsigned long val, int size)
+ static inline unsigned long __percpu_xchg(void *ptr, unsigned long val,
+ 						int size)
+ {
+-	unsigned long ret, loop;
++	unsigned long ret = 0, loop;
+ 
+ 	switch (size) {
+ 	case 1:
+-- 
+2.17.1
+

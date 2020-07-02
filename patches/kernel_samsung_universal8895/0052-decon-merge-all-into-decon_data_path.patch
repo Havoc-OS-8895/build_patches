@@ -1,0 +1,38 @@
+From 0bb1ece2d19f0f70ef771dea90259e4ed5400657 Mon Sep 17 00:00:00 2001
+From: Michael Benedict <michaelbt@live.com>
+Date: Mon, 3 Jun 2019 21:47:48 +1000
+Subject: [PATCH 52/60] decon: merge all into decon_data_path
+
+Signed-off-by: Michael Benedict <michaelbt@live.com>
+---
+ drivers/video/fbdev/exynos/dpu/decon.h | 6 +-----
+ 1 file changed, 1 insertion(+), 5 deletions(-)
+
+diff --git a/drivers/video/fbdev/exynos/dpu/decon.h b/drivers/video/fbdev/exynos/dpu/decon.h
+index e2616c3156fb..23a00fc73969 100644
+--- a/drivers/video/fbdev/exynos/dpu/decon.h
++++ b/drivers/video/fbdev/exynos/dpu/decon.h
+@@ -389,9 +389,7 @@ enum decon_data_path {
+ 	DPATH_DSCC_DSCENC01_FF01_FORMATTER01_DSIMIF01	= 0x0B3,
+ 	/* WB_PRE */
+ 	DPATH_WBPRE_ONLY					= 0x100,
+-};
+ 
+-enum decon1_data_path {
+ 	/* No comp - FF0 - FORMATTER0 - DSIM_IF0 */
+ 	DECON1_NOCOMP_FF0_FORMATTER0_DSIMIF0	= 0x001,
+ 	/* No comp - FF0 - FORMATTER0 - WB_POST */
+@@ -402,9 +400,7 @@ enum decon1_data_path {
+ 	DECON1_DSCENC1_FF0_FORMATTER0_WBPOST	= 0x014,
+ 	/* WB_PRE */
+ 	DECON1_WBPRE_ONLY				= 0x100,
+-};
+-
+-enum decon2_data_path {
++	
+ 	/* No comp - FF0 - FORMATTER0  - WB_POST */
+ 	DECON2_NOCOMP_FF0_FORMATTER0_WBPOST		= 0x004,
+ 	/* No comp - FF0 - FORMATTER0  - DISPIF */
+-- 
+2.17.1
+

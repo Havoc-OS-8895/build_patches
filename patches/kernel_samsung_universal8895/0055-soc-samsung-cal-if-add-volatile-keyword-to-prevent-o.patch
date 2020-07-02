@@ -1,0 +1,29 @@
+From 94935359d16fee28bfa1cb8d837a00a44708e54e Mon Sep 17 00:00:00 2001
+From: Michael Benedict <michaelbt@live.com>
+Date: Sun, 9 Jun 2019 03:44:13 +1000
+Subject: [PATCH 55/60] soc: samsung: cal-if: add volatile keyword to prevent
+ optimization by clang
+
+Signed-off-by: Michael Benedict <michaelbt@live.com>
+---
+ drivers/soc/samsung/cal-if/exynos8895/asv_exynos8895.h | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/soc/samsung/cal-if/exynos8895/asv_exynos8895.h b/drivers/soc/samsung/cal-if/exynos8895/asv_exynos8895.h
+index 6d76f7df1575..b76162fa9a47 100644
+--- a/drivers/soc/samsung/cal-if/exynos8895/asv_exynos8895.h
++++ b/drivers/soc/samsung/cal-if/exynos8895/asv_exynos8895.h
+@@ -69,8 +69,8 @@ struct id_tbl_info {
+ 	unsigned reserved_5:8;
+ };
+ 
+-static struct asv_tbl_info *asv_tbl;
+-static struct id_tbl_info *id_tbl;
++static volatile struct asv_tbl_info *asv_tbl;
++static volatile struct id_tbl_info *id_tbl;
+ 
+ int asv_get_grp(unsigned int id)
+ {
+-- 
+2.17.1
+

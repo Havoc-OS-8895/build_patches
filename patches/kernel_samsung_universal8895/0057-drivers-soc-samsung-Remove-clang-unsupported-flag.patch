@@ -1,0 +1,25 @@
+From 6a4adee7a145971917bf608bfdb99c285295954c Mon Sep 17 00:00:00 2001
+From: Diep Quynh <remilia.1505@gmail.com>
+Date: Thu, 16 Apr 2020 14:45:19 +0700
+Subject: [PATCH 57/60] drivers: soc: samsung: Remove clang unsupported flag
+
+Signed-off-by: Diep Quynh <remilia.1505@gmail.com>
+---
+ drivers/soc/samsung/Makefile | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/drivers/soc/samsung/Makefile b/drivers/soc/samsung/Makefile
+index 5e365e4456ee..080669f40069 100644
+--- a/drivers/soc/samsung/Makefile
++++ b/drivers/soc/samsung/Makefile
+@@ -2,7 +2,6 @@
+ # Exynos SoC Specific drivers
+ #
+ 
+-subdir-ccflags-y += -Wno-sizeof-pointer-div
+ ccflags-y := $(KBUILD_FP_SENSOR_CFLAGS)
+ 
+ obj-$(CONFIG_ARCH_EXYNOS)	+= exynos-powermode.o
+-- 
+2.17.1
+

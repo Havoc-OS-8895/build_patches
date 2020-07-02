@@ -1,0 +1,24 @@
+From b0dbb1f7844a64f10d096f5654465bb384860cee Mon Sep 17 00:00:00 2001
+From: Diep Quynh <remilia.1505@gmail.com>
+Date: Thu, 16 Apr 2020 15:46:48 +0700
+Subject: [PATCH 5/7] universal8895-common: Increase zram disksize
+
+Signed-off-by: Diep Quynh <remilia.1505@gmail.com>
+Change-Id: I108b852b4e94663eda5b9b90ab178b211ebe16b0
+---
+ ramdisk/etc/fstab.samsungexynos8895 | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/ramdisk/etc/fstab.samsungexynos8895 b/ramdisk/etc/fstab.samsungexynos8895
+index c087723..b060105 100644
+--- a/ramdisk/etc/fstab.samsungexynos8895
++++ b/ramdisk/etc/fstab.samsungexynos8895
+@@ -20,4 +20,4 @@
+ /devices/platform/10c00000.usb/10c00000.dwc3*           auto        auto    defaults    voldmanaged=usb:auto
+ 
+ # ZRAM
+-/dev/block/zram0                                        none        swap    defaults    zramsize=1073741824
++/dev/block/zram0                                        none        swap    defaults    zramsize=2147483648
+-- 
+2.17.1
+

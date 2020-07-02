@@ -1,0 +1,27 @@
+From f8afdd13a7bd89481fe8d0db435b83cedfb768ee Mon Sep 17 00:00:00 2001
+From: Diep Quynh <remilia.1505@gmail.com>
+Date: Sun, 26 Apr 2020 19:43:17 +0700
+Subject: [PATCH 59/60] sec_ts_y661: Silence -Wlogical-not-parentheses warning
+
+Signed-off-by: Diep Quynh <remilia.1505@gmail.com>
+Change-Id: I1325c4f59717fcaa32f74144861a1f3177fc9542
+---
+ drivers/input/touchscreen/sec_ts_y661/sec_ts_fn.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/input/touchscreen/sec_ts_y661/sec_ts_fn.c b/drivers/input/touchscreen/sec_ts_y661/sec_ts_fn.c
+index 9fcdbbb77d31..d0037b4227a2 100644
+--- a/drivers/input/touchscreen/sec_ts_y661/sec_ts_fn.c
++++ b/drivers/input/touchscreen/sec_ts_y661/sec_ts_fn.c
+@@ -3261,7 +3261,7 @@ static void clear_cover_mode(void *device_data)
+ #endif
+ 		}
+ 
+-		if (!ts->power_status == SEC_TS_STATE_POWER_OFF && ts->reinit_done) {
++		if (ts->power_status != SEC_TS_STATE_POWER_OFF && ts->reinit_done) {
+ 			if (ts->flip_enable)
+ 				sec_ts_set_cover_type(ts, true);
+ 			else
+-- 
+2.17.1
+

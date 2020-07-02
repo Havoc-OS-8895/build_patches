@@ -1,0 +1,49 @@
+From 398a82b76080a30c2d0148d9d868e87f7c3294c0 Mon Sep 17 00:00:00 2001
+From: Nathan Chancellor <natechancellor@gmail.com>
+Date: Tue, 22 May 2018 14:59:35 -0700
+Subject: [PATCH 26/60] FROMLIST: arm64: vdso32: Use full path to Clang instead
+ of relying on PATH
+
+Currently, in order to build the compat VDSO with Clang, this format
+has to be used:
+
+  PATH=${BIN_FOLDER}:${PATH} make CC=clang
+
+Prior to the addition of this file, this format would also be
+acceptable:
+
+  make CC=${BIN_FOLDER}/clang
+
+This is because the vdso32 Makefile uses cc-name instead of CC. After
+this path, CC will still evaluate to clang for the first case as
+expected but now the second case will use the specified Clang, rather
+than the host's copy, which may not be compatible as shown below.
+
+/usr/bin/as: unrecognized option '-mfloat-abi=soft'
+clang-6.0: error: assembler command failed with exit code 1
+
+Signed-off-by: Nathan Chancellor <natechancellor@gmail.com>
+(cherry picked from https://patchwork.kernel.org/patch/10419665)
+Bug: 80184372
+Change-Id: If90a5a4edbc2b5883b4c78161081ebeafbebdcde
+Signed-off-by: khusika <khusikadhamar@gmail.com>
+---
+ arch/arm64/kernel/vdso32/Makefile | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/arm64/kernel/vdso32/Makefile b/arch/arm64/kernel/vdso32/Makefile
+index 6d44d972e89d..837e877a326b 100644
+--- a/arch/arm64/kernel/vdso32/Makefile
++++ b/arch/arm64/kernel/vdso32/Makefile
+@@ -5,7 +5,7 @@
+ # A mix between the arm64 and arm vDSO Makefiles.
+ 
+ ifeq ($(cc-name),clang)
+-  CC_ARM32 := $(cc-name) $(CLANG_TARGET_ARM32) -no-integrated-as
++  CC_ARM32 := $(CC) $(CLANG_TARGET_ARM32) -no-integrated-as
+ else
+   CC_ARM32 := $(CROSS_COMPILE_ARM32)$(cc-name)
+ endif
+-- 
+2.17.1
+

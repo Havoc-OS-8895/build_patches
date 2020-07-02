@@ -1,0 +1,37 @@
+From 4a7ead266fceb5922e17a3e338644cf64e7552a2 Mon Sep 17 00:00:00 2001
+From: corsicanu <corsicanu22@gmail.com>
+Date: Mon, 8 Jul 2019 00:50:26 +0300
+Subject: [PATCH 03/60] config: enable CONFIG_NETFILTER_XT_TARGET_CT
+
+---
+ arch/arm64/configs/exynos8895_dreamlte_dream2lte_defconfig | 1 +
+ arch/arm64/configs/exynos8895_greatlte_defconfig           | 1 +
+ 2 files changed, 2 insertions(+)
+
+diff --git a/arch/arm64/configs/exynos8895_dreamlte_dream2lte_defconfig b/arch/arm64/configs/exynos8895_dreamlte_dream2lte_defconfig
+index 67abbcfa071f..50653998121f 100644
+--- a/arch/arm64/configs/exynos8895_dreamlte_dream2lte_defconfig
++++ b/arch/arm64/configs/exynos8895_dreamlte_dream2lte_defconfig
+@@ -135,6 +135,7 @@ CONFIG_NF_CT_NETLINK=y
+ CONFIG_NETFILTER_XT_TARGET_CLASSIFY=y
+ CONFIG_NETFILTER_XT_TARGET_CONNMARK=y
+ CONFIG_NETFILTER_XT_TARGET_CONNSECMARK=y
++CONFIG_NETFILTER_XT_TARGET_CT=y
+ CONFIG_NETFILTER_XT_TARGET_IDLETIMER=y
+ CONFIG_NETFILTER_XT_TARGET_LOG=y
+ CONFIG_NETFILTER_XT_TARGET_MARK=y
+diff --git a/arch/arm64/configs/exynos8895_greatlte_defconfig b/arch/arm64/configs/exynos8895_greatlte_defconfig
+index f5b79fbf07c7..f3b8beea3e1a 100644
+--- a/arch/arm64/configs/exynos8895_greatlte_defconfig
++++ b/arch/arm64/configs/exynos8895_greatlte_defconfig
+@@ -138,6 +138,7 @@ CONFIG_NF_CT_NETLINK=y
+ CONFIG_NETFILTER_XT_TARGET_CLASSIFY=y
+ CONFIG_NETFILTER_XT_TARGET_CONNMARK=y
+ CONFIG_NETFILTER_XT_TARGET_CONNSECMARK=y
++CONFIG_NETFILTER_XT_TARGET_CT=y
+ CONFIG_NETFILTER_XT_TARGET_IDLETIMER=y
+ CONFIG_NETFILTER_XT_TARGET_LOG=y
+ CONFIG_NETFILTER_XT_TARGET_MARK=y
+-- 
+2.17.1
+

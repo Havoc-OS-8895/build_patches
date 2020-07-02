@@ -1,0 +1,93 @@
+From b631dea4d2d7a5a9447fc49b9da04ec5e4e054cd Mon Sep 17 00:00:00 2001
+From: Diep Quynh <remilia.1505@gmail.com>
+Date: Mon, 18 Feb 2019 13:19:11 +0700
+Subject: [PATCH 23/60] input: Kill Samsung input booster
+
+We'll go for qcom's cpu-boost instead
+
+Signed-off-by: Diep Quynh <remilia.1505@gmail.com>
+---
+ drivers/input/input.c | 18 ++++++++++--------
+ 1 file changed, 10 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/input/input.c b/drivers/input/input.c
+index 65a10f7e7e7d..24ea80379da0 100644
+--- a/drivers/input/input.c
++++ b/drivers/input/input.c
+@@ -29,7 +29,7 @@
+ #include <linux/rcupdate.h>
+ #include "input-compat.h"
+ 
+-#if !defined(CONFIG_INPUT_BOOSTER) // Input Booster +
++#if defined(CONFIG_INPUT_BOOSTER) // Input Booster +
+ #include <linux/input/input.h>
+ #endif // Input Booster -
+ 
+@@ -414,7 +414,7 @@ static void input_handle_event(struct input_dev *dev,
+ }
+ 
+ 
+-#if !defined(CONFIG_INPUT_BOOSTER) // Input Booster +
++#if defined(CONFIG_INPUT_BOOSTER) // Input Booster +
+ // ********** Define Timeout Functions ********** //
+ DECLARE_TIMEOUT_FUNC(touch);
+ DECLARE_TIMEOUT_FUNC(multitouch);
+@@ -602,11 +602,11 @@ void input_booster(struct input_dev *dev)
+ 							if((input_events[iTouchSlot].value >= 0 && touch_booster.multi_events <= 0) || (input_events[iTouchSlot].value == 0 && TouchIDs[1] < 0)) {
+ 								touch_booster.multi_events = 0;
+ 								pr_debug("[Input Booster] TOUCH EVENT - PRESS - ID: 0x%x, Slot: 0x%x, multi : %d\n", input_events[iTouchID].value, input_events[iTouchSlot].value, touch_booster.multi_events);
+-								RUN_BOOSTER(touch, BOOSTER_ON );
++								RUN_BOOSTER(touch, BOOSTER_ON);
+ 							} else {
+ 								pr_debug("[Input Booster] MULTI-TOUCH EVENT - PRESS - ID: 0x%x, Slot: 0x%x, multi : %d\n", input_events[iTouchID].value, input_events[iTouchSlot].value, touch_booster.multi_events);
+ 								touch_booster.multi_events++;
+-								RUN_BOOSTER(multitouch, BOOSTER_ON );
++								RUN_BOOSTER(multitouch, BOOSTER_ON);
+ /*
+ 								if(delayed_work_pending(&touch_booster.input_booster_timeout_work[0])) {
+ 									int temp_hmp_boost = touch_booster.param[0].hmp_boost, temp_index = touch_booster.index;
+@@ -624,11 +624,11 @@ void input_booster(struct input_dev *dev)
+ 							TouchIDs[input_events[iTouchSlot].value] = input_events[iTouchID].value;
+ 							if(touch_booster.multi_events <= 1) {
+ 								pr_debug("[Input Booster] TOUCH EVENT - RELEASE - ID: 0x%x, Slot: 0x%x, multi : %d\n", input_events[iTouchID].value, input_events[iTouchSlot].value, touch_booster.multi_events);
+-								RUN_BOOSTER(touch, BOOSTER_OFF );
++								RUN_BOOSTER(touch, BOOSTER_OFF);
+ 							} else {
+ 								pr_debug("[Input Booster] MULTI-TOUCH EVENT - RELEASE - ID: 0x%x, Slot: 0x%x, multi : %d\n", input_events[iTouchID].value, input_events[iTouchSlot].value, touch_booster.multi_events);
+ 								touch_booster.multi_events--;
+-								RUN_BOOSTER(multitouch, BOOSTER_OFF );
++								RUN_BOOSTER(multitouch, BOOSTER_OFF);
+ 							}
+ 						}
+ 					}
+@@ -844,7 +844,9 @@ void input_event(struct input_dev *dev,
+ 		 unsigned int type, unsigned int code, int value)
+ {
+ 	unsigned long flags;
++#if defined(CONFIG_INPUT_BOOSTER)
+ 	int idx;
++#endif
+ 
+ 	if (is_event_supported(type, dev->evbit, EV_MAX)) {
+ 
+@@ -852,7 +854,7 @@ void input_event(struct input_dev *dev,
+ 		input_handle_event(dev, type, code, value);
+ 		spin_unlock_irqrestore(&dev->event_lock, flags);
+ 
+-#if !defined(CONFIG_INPUT_BOOSTER) // Input Booster +
++#if defined(CONFIG_INPUT_BOOSTER) // Input Booster +
+ 		if(device_tree_infor != NULL) {
+ 			if (type == EV_SYN && input_count > 0) {
+ 				pr_debug("[Input Booster1] ==============================================\n");
+@@ -2952,7 +2954,7 @@ static int __init input_init(void)
+ 		goto fail2;
+ 	}
+ 
+-#if !defined(CONFIG_INPUT_BOOSTER) // Input Booster +
++#if defined(CONFIG_INPUT_BOOSTER) // Input Booster +
+ 	input_booster_init();
+ #endif  // Input Booster -
+ 
+-- 
+2.17.1
+

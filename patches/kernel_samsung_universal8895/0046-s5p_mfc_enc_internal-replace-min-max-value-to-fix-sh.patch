@@ -1,0 +1,29 @@
+From cd267ec8e82c10f00f98116c38e178de70ef9326 Mon Sep 17 00:00:00 2001
+From: Michael Benedict <michaelbt@live.com>
+Date: Mon, 22 Apr 2019 15:13:48 +1000
+Subject: [PATCH 46/60] s5p_mfc_enc_internal: replace min/max value to fix
+ shift-overflow warning
+
+Signed-off-by: Michael Benedict <michaelbt@live.com>
+---
+ drivers/media/platform/exynos/mfc/s5p_mfc_enc_internal.h | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/media/platform/exynos/mfc/s5p_mfc_enc_internal.h b/drivers/media/platform/exynos/mfc/s5p_mfc_enc_internal.h
+index e3fd3fadd031..9b960eb357b8 100644
+--- a/drivers/media/platform/exynos/mfc/s5p_mfc_enc_internal.h
++++ b/drivers/media/platform/exynos/mfc/s5p_mfc_enc_internal.h
+@@ -1611,8 +1611,8 @@ static struct v4l2_queryctrl controls[] = {
+ 		.id = V4L2_CID_MPEG_MFC_GET_EXTRA_BUFFER_SIZE,
+ 		.type = V4L2_CTRL_TYPE_INTEGER,
+ 		.name = "Get extra buffer size",
+-		.minimum = 0,
+-		.maximum = (2 << 31) - 1,
++		.minimum = INT_MIN,
++		.maximum = INT_MAX,
+ 		.step = 1,
+ 		.default_value = 0,
+ 	},
+-- 
+2.17.1
+

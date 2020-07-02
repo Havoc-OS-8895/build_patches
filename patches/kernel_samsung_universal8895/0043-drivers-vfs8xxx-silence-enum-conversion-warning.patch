@@ -1,0 +1,26 @@
+From de84ffe273d3141ea05fd0bf9afb58642cc28804 Mon Sep 17 00:00:00 2001
+From: Michael Benedict <michaelbt@live.com>
+Date: Mon, 3 Jun 2019 18:32:11 +1000
+Subject: [PATCH 43/60] drivers: vfs8xxx: silence enum-conversion warning
+
+Signed-off-by: Michael Benedict <michaelbt@live.com>
+---
+ drivers/fingerprint/vfs8xxx.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/fingerprint/vfs8xxx.c b/drivers/fingerprint/vfs8xxx.c
+index 7b51ec464498..e077b4251c37 100644
+--- a/drivers/fingerprint/vfs8xxx.c
++++ b/drivers/fingerprint/vfs8xxx.c
+@@ -1368,7 +1368,7 @@ static int vfsspi_parse_dt(struct device *dev, struct vfsspi_device_data *data)
+ 
+ 	if (of_property_read_string_index(np, "vfsspi-chipid", 0,
+ 			(const char **)&data->chipid))
+-		data->chipid = '\0';
++		data->chipid = NULL;
+ 	pr_info("%s: chipid: %s\n", __func__, data->chipid);
+ 
+ 	if (of_property_read_u32(np, "vfsspi-wog", &data->detect_mode))
+-- 
+2.17.1
+

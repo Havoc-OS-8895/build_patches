@@ -1,0 +1,41 @@
+From 689b8e9ab82643d7443e0a7bb3551ec05ff0e7eb Mon Sep 17 00:00:00 2001
+From: Yaroslav Furman <yaro330@gmail.com>
+Date: Fri, 22 Jun 2018 21:10:23 +0300
+Subject: [PATCH 40/60] vs4l: remove __u[32/16/8] and __s32 declarations
+
+They are already defined. Fixes redefinition warnings.
+Signed-off-by: Yaroslav Furman <yaro330@gmail.com>
+---
+ drivers/vision/include/vs4l.h | 16 ----------------
+ 1 file changed, 16 deletions(-)
+
+diff --git a/drivers/vision/include/vs4l.h b/drivers/vision/include/vs4l.h
+index 4373b351aece..ff29ad8011a8 100644
+--- a/drivers/vision/include/vs4l.h
++++ b/drivers/vision/include/vs4l.h
+@@ -12,22 +12,6 @@
+ #ifndef VISION_FOR_LINUX_H_
+ #define VISION_FOR_LINUX_H_
+ 
+-#ifndef __u32
+-typedef unsigned int __u32;
+-#endif
+-
+-#ifndef __u16
+-typedef unsigned short __u16;
+-#endif
+-
+-#ifndef __u8
+-typedef unsigned char __u8;
+-#endif
+-
+-#ifndef __s32
+-typedef	int __s32;
+-#endif
+-
+ #define VS4L_VERSION		5
+ #define VS4L_TARGET_SC		0xFFFF
+ #define VS4L_TARGET_SC_SHIFT	16
+-- 
+2.17.1
+

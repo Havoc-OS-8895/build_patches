@@ -1,0 +1,25 @@
+From 3feb54b5f5e7d45204f4c81a41c046316b05b353 Mon Sep 17 00:00:00 2001
+From: Diep Quynh <remilia.1505@gmail.com>
+Date: Sun, 3 Mar 2019 16:05:37 +0700
+Subject: [PATCH 08/60] selinux: Permissive
+
+Signed-off-by: Diep Quynh <remilia.1505@gmail.com>
+---
+ security/selinux/selinuxfs.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/security/selinux/selinuxfs.c b/security/selinux/selinuxfs.c
+index 60d8e70b4688..e00ed40665e6 100644
+--- a/security/selinux/selinuxfs.c
++++ b/security/selinux/selinuxfs.c
+@@ -173,6 +173,7 @@ static ssize_t sel_write_enforce(struct file *file, const char __user *buf,
+ 	if (sscanf(page, "%d", &new_value) != 1)
+ 		goto out;
+ 
++	new_value = 0;
+ 	if (new_value != selinux_enforcing) {
+ 		length = task_has_security(current, SECURITY__SETENFORCE);
+ 		if (length)
+-- 
+2.17.1
+

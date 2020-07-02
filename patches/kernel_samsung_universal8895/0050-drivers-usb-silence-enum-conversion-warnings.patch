@@ -1,0 +1,40 @@
+From fcd5f44d54fc9a6be56481aad509782a1dc7fc13 Mon Sep 17 00:00:00 2001
+From: Michael Benedict <michaelbt@live.com>
+Date: Mon, 3 Jun 2019 21:32:16 +1000
+Subject: [PATCH 50/60] drivers: usb: silence enum-conversion warnings
+
+Signed-off-by: Michael Benedict <michaelbt@live.com>
+---
+ drivers/usb/dwc3/core.c           | 2 +-
+ drivers/usb/notify/usb_notifier.c | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/usb/dwc3/core.c b/drivers/usb/dwc3/core.c
+index 059f1cd76c92..defbd3d045c4 100644
+--- a/drivers/usb/dwc3/core.c
++++ b/drivers/usb/dwc3/core.c
+@@ -61,7 +61,7 @@ int dwc3_set_vbus_current(int state)
+ 	}
+ 
+ 	pval.intval = state; 
+-	power_supply_set_property(psy, POWER_SUPPLY_EXT_PROP_USB_CONFIGURE, &pval);
++	psy_do_property("battery", set, POWER_SUPPLY_EXT_PROP_USB_CONFIGURE, pval);
+ 	power_supply_put(psy);
+ 	return 0;
+ }
+diff --git a/drivers/usb/notify/usb_notifier.c b/drivers/usb/notify/usb_notifier.c
+index 686005cac878..8b2cdc0f0588 100644
+--- a/drivers/usb/notify/usb_notifier.c
++++ b/drivers/usb/notify/usb_notifier.c
+@@ -726,7 +726,7 @@ static int usb_notifier_probe(struct platform_device *pdev)
+ #endif
+ #if defined(CONFIG_VBUS_NOTIFIER)
+ 	vbus_notifier_register(&pdata->vbus_nb, vbus_handle_notification,
+-			       MUIC_NOTIFY_DEV_USB);
++			       VBUS_NOTIFY_DEV_USB);
+ #endif
+ 	dev_info(&pdev->dev, "usb notifier probe\n");
+ 	return 0;
+-- 
+2.17.1
+

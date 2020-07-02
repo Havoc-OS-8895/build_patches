@@ -1,0 +1,26 @@
+From 8c0816b6273b3459f2c7ddc6a01eca652c9b3e49 Mon Sep 17 00:00:00 2001
+From: Yaroslav Furman <yaro330@gmail.com>
+Date: Fri, 22 Jun 2018 21:57:44 +0300
+Subject: [PATCH 42/60] decon_core: fix parentheses-equality warning
+
+Signed-off-by: Yaroslav Furman <yaro330@gmail.com>
+---
+ drivers/video/fbdev/exynos/dpu/decon_core.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/video/fbdev/exynos/dpu/decon_core.c b/drivers/video/fbdev/exynos/dpu/decon_core.c
+index c2d95e67c315..72cd4e336a3f 100644
+--- a/drivers/video/fbdev/exynos/dpu/decon_core.c
++++ b/drivers/video/fbdev/exynos/dpu/decon_core.c
+@@ -3859,7 +3859,7 @@ static void decon_parse_dt(struct decon_device *decon)
+ 		}
+ 	}
+ 
+-	if ((decon->dt.out_type == DECON_OUT_DSI)) {
++	if (decon->dt.out_type == DECON_OUT_DSI) {
+ 		te_eint = of_get_child_by_name(decon->dev->of_node, "te_eint");
+ 		if (!te_eint) {
+ 			decon_info("No DT node for te_eint\n");
+-- 
+2.17.1
+

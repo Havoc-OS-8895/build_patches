@@ -1,0 +1,52 @@
+From 0e1ebe1eaf599518be0c6dbcbdabe4e5fe032c70 Mon Sep 17 00:00:00 2001
+From: "Christopher N. Hesse" <raymanfx@gmail.com>
+Date: Sat, 28 Jan 2017 00:07:07 +0100
+Subject: [PATCH 09/60] video: mdnie: Lift RGB tuning restrictions
+
+Change-Id: Ibbf1efd2aa19a2790773bd84da3364cfeffffe4b
+---
+ drivers/video/fbdev/exynos/panel/mdnie.c | 13 +++++--------
+ 1 file changed, 5 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/video/fbdev/exynos/panel/mdnie.c b/drivers/video/fbdev/exynos/panel/mdnie.c
+index a89811098d9f..fdab830d2f39 100644
+--- a/drivers/video/fbdev/exynos/panel/mdnie.c
++++ b/drivers/video/fbdev/exynos/panel/mdnie.c
+@@ -453,10 +453,10 @@ static void mdnie_update_scr_white_mode(struct mdnie_info *mdnie)
+ 	if (mdnie_mode == MDNIE_SCENARIO_MODE) {
+ 		if ((IS_LDU_MODE(mdnie)) && (mdnie->props.scenario != EBOOK_MODE)) {
+ 			mdnie->props.scr_white_mode = SCR_WHITE_MODE_ADJUST_LDU;
+-		} else if (mdnie->props.update_sensorRGB &&
+-				mdnie->props.mode == AUTO &&
++		} else if (mdnie->props.update_sensorRGB ||
++				(mdnie->props.mode == AUTO &&
+ 				(mdnie->props.scenario == BROWSER_MODE ||
+-				 mdnie->props.scenario == EBOOK_MODE)) {
++				 mdnie->props.scenario == EBOOK_MODE))) {
+ 			mdnie->props.scr_white_mode = SCR_WHITE_MODE_SENSOR_RGB;
+ 			mdnie->props.update_sensorRGB = false;
+ 		} else if (mdnie->props.scenario <= SCENARIO_MAX &&
+@@ -822,7 +822,7 @@ static ssize_t sensorRGB_store(struct device *dev,
+ {
+ 	struct mdnie_info *mdnie = dev_get_drvdata(dev);
+ 	unsigned int white_red = 0, white_green = 0, white_blue = 0;
+-	int mdnie_mode = mdnie_current_state(mdnie), ret;
++	int ret;
+ 
+ 	ret = sscanf(buf, "%d %d %d",
+ 		&white_red, &white_green, &white_blue);
+@@ -832,10 +832,7 @@ static ssize_t sensorRGB_store(struct device *dev,
+ 	 dev_info(dev, "%s, white_r %d, white_g %d, white_b %d\n",
+ 			 __func__, white_red, white_green, white_blue);
+ 
+-	if (mdnie_mode == MDNIE_SCENARIO_MODE &&
+-			mdnie->props.mode == AUTO &&
+-		(mdnie->props.scenario == BROWSER_MODE ||
+-		 mdnie->props.scenario == EBOOK_MODE)) {
++	if (IS_MDNIE_ENABLED(mdnie)) {
+ 		mutex_lock(&mdnie->lock);
+ 		mdnie->props.ssr_wrgb[0] = white_red;
+ 		mdnie->props.ssr_wrgb[1] = white_green;
+-- 
+2.17.1
+

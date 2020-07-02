@@ -1,0 +1,42 @@
+From e01a6c0a147839cb21bfc84e37f2b23b759614b2 Mon Sep 17 00:00:00 2001
+From: ivanmeler <i_ivan@windowslive.com>
+Date: Tue, 30 Jul 2019 08:43:19 +0300
+Subject: [PATCH 07/60] defconfig: Enable support for sdFAT filesystem
+
+* Update default charset for FAT to UTF-8, matching sdFAT's default.
+---
+ arch/arm64/configs/exynos8895_dreamlte_dream2lte_defconfig | 3 +++
+ arch/arm64/configs/exynos8895_greatlte_defconfig           | 3 +++
+ 2 files changed, 6 insertions(+)
+
+diff --git a/arch/arm64/configs/exynos8895_dreamlte_dream2lte_defconfig b/arch/arm64/configs/exynos8895_dreamlte_dream2lte_defconfig
+index 50653998121f..186efea34881 100644
+--- a/arch/arm64/configs/exynos8895_dreamlte_dream2lte_defconfig
++++ b/arch/arm64/configs/exynos8895_dreamlte_dream2lte_defconfig
+@@ -686,6 +686,9 @@ CONFIG_QFMT_V2=y
+ CONFIG_FUSE_FS=y
+ CONFIG_MSDOS_FS=y
+ CONFIG_VFAT_FS=y
++CONFIG_FAT_DEFAULT_IOCHARSET="utf8"
++CONFIG_SDFAT_SUPPORT_DIR_SYNC=y
++CONFIG_SDFAT_CHECK_RO_ATTR=y
+ CONFIG_TMPFS=y
+ CONFIG_TMPFS_POSIX_ACL=y
+ CONFIG_ECRYPT_FS=y
+diff --git a/arch/arm64/configs/exynos8895_greatlte_defconfig b/arch/arm64/configs/exynos8895_greatlte_defconfig
+index f3b8beea3e1a..5c53cc0273c1 100644
+--- a/arch/arm64/configs/exynos8895_greatlte_defconfig
++++ b/arch/arm64/configs/exynos8895_greatlte_defconfig
+@@ -700,6 +700,9 @@ CONFIG_QFMT_V2=y
+ CONFIG_FUSE_FS=y
+ CONFIG_MSDOS_FS=y
+ CONFIG_VFAT_FS=y
++CONFIG_FAT_DEFAULT_IOCHARSET="utf8"
++CONFIG_SDFAT_SUPPORT_DIR_SYNC=y
++CONFIG_SDFAT_CHECK_RO_ATTR=y
+ CONFIG_TMPFS=y
+ CONFIG_TMPFS_POSIX_ACL=y
+ CONFIG_ECRYPT_FS=y
+-- 
+2.17.1
+

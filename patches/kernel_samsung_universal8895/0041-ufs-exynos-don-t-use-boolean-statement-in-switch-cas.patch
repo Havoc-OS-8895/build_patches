@@ -1,0 +1,41 @@
+From 1863bc315793bcaaa2bd5821289a6ef58134eacf Mon Sep 17 00:00:00 2001
+From: Yaroslav Furman <yaro330@gmail.com>
+Date: Fri, 22 Jun 2018 21:00:27 +0300
+Subject: [PATCH 41/60] ufs-exynos: don't use boolean statement in switch-case
+
+Convert it to int because it's not really a boolean.
+Signed-off-by: Yaroslav Furman <yaro330@gmail.com>
+---
+ drivers/scsi/ufs/ufs-exynos.c | 2 +-
+ drivers/scsi/ufs/ufshcd.h     | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/scsi/ufs/ufs-exynos.c b/drivers/scsi/ufs/ufs-exynos.c
+index c44ea840c4b6..c1bf3d05ab2a 100644
+--- a/drivers/scsi/ufs/ufs-exynos.c
++++ b/drivers/scsi/ufs/ufs-exynos.c
+@@ -1820,7 +1820,7 @@ static void exynos_ufs_set_nexus_t_task_mgmt(struct ufs_hba *hba, int tag, u8 tm
+ }
+ 
+ static void exynos_ufs_hibern8_notify(struct ufs_hba *hba,
+-				u8 enter, bool notify)
++				u8 enter, int notify)
+ {
+ 	enum ufs_notify_change_status status = (enum ufs_notify_change_status)notify;
+ 	switch (status) {
+diff --git a/drivers/scsi/ufs/ufshcd.h b/drivers/scsi/ufs/ufshcd.h
+index ce0ce4ed11fc..249abbd2cca1 100644
+--- a/drivers/scsi/ufs/ufshcd.h
++++ b/drivers/scsi/ufs/ufshcd.h
+@@ -310,7 +310,7 @@ struct ufs_hba_variant_ops {
+ 	void	(*set_nexus_t_xfer_req)(struct ufs_hba *,
+ 					int, struct scsi_cmnd *);
+ 	void	(*set_nexus_t_task_mgmt)(struct ufs_hba *, int, u8);
+-	void    (*hibern8_notify)(struct ufs_hba *, u8, bool);
++	void    (*hibern8_notify)(struct ufs_hba *, u8, int);
+ 	int     (*suspend)(struct ufs_hba *, enum ufs_pm_op);
+ 	int     (*resume)(struct ufs_hba *, enum ufs_pm_op);
+ 	void	(*dbg_register_dump)(struct ufs_hba *hba);
+-- 
+2.17.1
+

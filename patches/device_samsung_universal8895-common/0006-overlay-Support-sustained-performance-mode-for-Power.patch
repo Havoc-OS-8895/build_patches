@@ -1,0 +1,29 @@
+From 8008a500267a6a0db15f9550d07b8c0c99e75add Mon Sep 17 00:00:00 2001
+From: Diep Quynh <remilia.1505@gmail.com>
+Date: Wed, 22 Apr 2020 01:36:26 +0700
+Subject: [PATCH 6/7] overlay: Support sustained performance mode for PowerHAL
+
+Signed-off-by: Diep Quynh <remilia.1505@gmail.com>
+Change-Id: Ib3dd5f4ad75127480f2a1ea568823e29252b5baf
+---
+ overlay/frameworks/base/core/res/res/values/config.xml | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/overlay/frameworks/base/core/res/res/values/config.xml b/overlay/frameworks/base/core/res/res/values/config.xml
+index f43011f..ed502a7 100644
+--- a/overlay/frameworks/base/core/res/res/values/config.xml
++++ b/overlay/frameworks/base/core/res/res/values/config.xml
+@@ -274,7 +274,9 @@ Add a comment to this line
+          turned off and the screen off animation has been performed. -->
+     <bool name="config_dozeAfterScreenOffByDefault">true</bool>
+ 
+-    
++    <!-- If this is true, device supports Sustained Performance Mode. -->
++    <bool name="config_sustainedPerformanceModeSupported">true</bool>
++
+ <!-- Values for GPS configuration -->
+     <string-array translatable="false" name="config_gpsParameters">
+         <item>XTRA_SERVER_1=https://glltos1.glpals.com/4day/v5/latest/lto2.dat</item>
+-- 
+2.17.1
+

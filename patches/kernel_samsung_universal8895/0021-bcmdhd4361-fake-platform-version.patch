@@ -1,0 +1,34 @@
+From a32a52b784bcebed96320c0a5c8fa41cb0f04364 Mon Sep 17 00:00:00 2001
+From: Michael Benedict <michaelbt@live.com>
+Date: Fri, 13 Sep 2019 00:51:34 +1000
+Subject: [PATCH 21/60] bcmdhd4361: fake platform version
+
+Signed-off-by: Michael Benedict <michaelbt@live.com>
+---
+ drivers/net/wireless/bcmdhd4361/Makefile | 10 +---------
+ 1 file changed, 1 insertion(+), 9 deletions(-)
+
+diff --git a/drivers/net/wireless/bcmdhd4361/Makefile b/drivers/net/wireless/bcmdhd4361/Makefile
+index 3953b192ac8f..a89c70c55d72 100644
+--- a/drivers/net/wireless/bcmdhd4361/Makefile
++++ b/drivers/net/wireless/bcmdhd4361/Makefile
+@@ -312,15 +312,7 @@ endif
+ DHDCFLAGS += -DBCMCRYPTO_COMPONENT
+ 
+ # Android Version Check from Platform source
+-ifneq ($(ANDROID_VERSION),)
+-MAJOR_VERSION := $(shell echo $(ANDROID_VERSION) | rev | cut -c 5- | rev)
+-DHDCFLAGS += -DANDROID_PLATFORM_VERSION=$(MAJOR_VERSION)
+-else
+-ifneq ($(PLATFORM_VERSION),)
+-MAJOR_VERSION := $(shell echo $(PLATFORM_VERSION) | cut -d "." -f 1)
+-DHDCFLAGS += -DANDROID_PLATFORM_VERSION=$(MAJOR_VERSION)
+-endif
+-endif
++DHDCFLAGS += -DANDROID_PLATFORM_VERSION=9
+ 
+ # TCP SYNC flood attack block
+ DHDCFLAGS += -DDHDTCPSYNC_FLOOD_BLK -DTCP_SYNC_FLOOD_LIMIT=50
+-- 
+2.17.1
+

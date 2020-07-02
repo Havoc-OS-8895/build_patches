@@ -1,0 +1,28 @@
+From c478fe1f9c53c550d949d6fb3db4eeca50ad485b Mon Sep 17 00:00:00 2001
+From: LuK1337 <priv.luk@gmail.com>
+Date: Tue, 24 Sep 2019 16:53:33 +0200
+Subject: [PATCH 13/60] block: Restore original read_ahead_kb mode
+
+* Apex isn't able to write to it without S_IWUSR.
+
+Change-Id: I374b4acb3239bf1f3ab2109e4391671c85131be5
+---
+ block/blk-sysfs.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/block/blk-sysfs.c b/block/blk-sysfs.c
+index f32f00e13703..68155dd21910 100644
+--- a/block/blk-sysfs.c
++++ b/block/blk-sysfs.c
+@@ -356,7 +356,7 @@ static struct queue_sysfs_entry queue_requests_entry = {
+ };
+ 
+ static struct queue_sysfs_entry queue_ra_entry = {
+-	.attr = {.name = "read_ahead_kb", .mode = S_IRUGO },
++	.attr = {.name = "read_ahead_kb", .mode = S_IRUGO | S_IWUSR },
+ 	.show = queue_ra_show,
+ 	.store = queue_ra_store,
+ };
+-- 
+2.17.1
+

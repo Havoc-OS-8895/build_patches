@@ -1,0 +1,38 @@
+From 4ba4b4016e011b806095cc0ef533fe50048f86ed Mon Sep 17 00:00:00 2001
+From: Michael Benedict <michaelbt@live.com>
+Date: Mon, 3 Jun 2019 22:38:12 +1000
+Subject: [PATCH 51/60] sec_debug: silence null-dereference warnings
+
+Signed-off-by: Michael Benedict <michaelbt@live.com>
+---
+ drivers/staging/samsung/sec_debug_test.c | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/staging/samsung/sec_debug_test.c b/drivers/staging/samsung/sec_debug_test.c
+index 812c7af6b54c..78bcfc63f823 100644
+--- a/drivers/staging/samsung/sec_debug_test.c
++++ b/drivers/staging/samsung/sec_debug_test.c
+@@ -160,7 +160,7 @@ static void pull_down_other_cpus(void)
+ static void simulate_KP(char *arg)
+ {
+ 	pr_crit("%s()\n", __func__);
+-	*(unsigned int *)0x0 = 0x0; /* SVACE: intended */
++	*(volatile unsigned int *)0x0 = 0x0; /* SVACE: intended */
+ }
+ 
+ static void simulate_DP(char *arg)
+@@ -209,8 +209,10 @@ static void simulate_WARN(char *arg)
+ 
+ static void simulate_DABRT(char *arg)
+ {
++#if 0
+ 	pr_crit("%s()\n", __func__);
+-	*((int *) 0) = 0; /* SVACE: intended */
++	*((int *)0) = 0; /* SVACE: intended */
++#endif
+ }
+ 
+ static void simulate_PABRT(char *arg)
+-- 
+2.17.1
+

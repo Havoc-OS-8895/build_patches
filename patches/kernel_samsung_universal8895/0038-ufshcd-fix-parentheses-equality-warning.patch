@@ -1,0 +1,29 @@
+From bfd9437943768c15b778022e6e7f1c0b389d7b79 Mon Sep 17 00:00:00 2001
+From: Yaroslav Furman <yaro330@gmail.com>
+Date: Fri, 22 Jun 2018 20:57:13 +0300
+Subject: [PATCH 38/60] ufshcd: fix parentheses-equality warning
+
+Signed-off-by: Yaroslav Furman <yaro330@gmail.com>
+---
+ drivers/scsi/ufs/ufshcd.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/scsi/ufs/ufshcd.c b/drivers/scsi/ufs/ufshcd.c
+index e34e1d9102d4..bc39465e1e99 100644
+--- a/drivers/scsi/ufs/ufshcd.c
++++ b/drivers/scsi/ufs/ufshcd.c
+@@ -1389,9 +1389,9 @@ ufshcd_wait_for_uic_cmd(struct ufs_hba *hba, struct uic_command *uic_cmd)
+ 
+ 	if (uic_cmd->command == UIC_CMD_DME_LINK_STARTUP)
+ 		index = 0;
+-	else if ((uic_cmd->command == UIC_CMD_DME_HIBER_ENTER))
++	else if (uic_cmd->command == UIC_CMD_DME_HIBER_ENTER)
+ 		index = 1;
+-	else if ((uic_cmd->command == UIC_CMD_DME_HIBER_EXIT))
++	else if (uic_cmd->command == UIC_CMD_DME_HIBER_EXIT)
+ 		index = 2;
+ 	else
+ 		index = -1;
+-- 
+2.17.1
+

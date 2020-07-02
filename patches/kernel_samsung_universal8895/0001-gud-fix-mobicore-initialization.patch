@@ -1,0 +1,39 @@
+From 8575febf016a9ecf99888dcf87a72977df9c8156 Mon Sep 17 00:00:00 2001
+From: Stricted <info@stricted.net>
+Date: Wed, 28 Aug 2019 15:26:26 +0000
+Subject: [PATCH 01/60] gud: fix mobicore initialization
+
+* backported from s9
+
+Change-Id: I48476e899495490ded64a9e173e3daa3c4cdafa0
+---
+ drivers/gud/gud-exynos8895_kinibi400/MobiCoreDriver/admin.c | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
+
+diff --git a/drivers/gud/gud-exynos8895_kinibi400/MobiCoreDriver/admin.c b/drivers/gud/gud-exynos8895_kinibi400/MobiCoreDriver/admin.c
+index 092e2aeba381..68b23ea806f4 100644
+--- a/drivers/gud/gud-exynos8895_kinibi400/MobiCoreDriver/admin.c
++++ b/drivers/gud/gud-exynos8895_kinibi400/MobiCoreDriver/admin.c
+@@ -903,7 +903,6 @@ static long admin_ioctl(struct file *file, unsigned int cmd,
+ 		}
+ 
+ 		/* Block until a request is available */
+-		server_state_change(READY);
+ 		ret = wait_for_completion_interruptible(
+ 						&g_request.client_complete);
+ 		if (ret)
+@@ -1070,10 +1069,9 @@ static int admin_open(struct inode *inode, struct file *file)
+ 		return admin_ctx.last_start_ret;
+ 	}
+ 
+-	reinit_completion_local(&g_request.client_complete);
+-	reinit_completion_local(&g_request.server_complete);
+ 	/* Requests from driver to daemon */
+ 	mc_dev_info("daemon connection open, TGID %d", admin_ctx.admin_tgid);
++	server_state_change(READY);
+ 	return 0;
+ }
+ 
+-- 
+2.17.1
+

@@ -1,0 +1,26 @@
+From ab2ac1dcd66507b7d370dd848389bb767e03d2e5 Mon Sep 17 00:00:00 2001
+From: Michael Benedict <michaelbt@live.com>
+Date: Mon, 3 Jun 2019 21:09:52 +1000
+Subject: [PATCH 47/60] drivers: phy: silence enum-conversion warning
+
+Signed-off-by: Michael Benedict <michaelbt@live.com>
+---
+ drivers/phy/phy-exynos-usbdrd.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/phy/phy-exynos-usbdrd.c b/drivers/phy/phy-exynos-usbdrd.c
+index caba1531ff3e..546a7673b142 100644
+--- a/drivers/phy/phy-exynos-usbdrd.c
++++ b/drivers/phy/phy-exynos-usbdrd.c
+@@ -631,7 +631,7 @@ static int exynos_usbdrd_get_phyinfo(struct exynos_usbdrd_phy *phy_drd)
+ 			phy_drd->usbphy_info.common_block_disable = false;
+ 		} else {
+ 			phy_drd->usbphy_info.version = EXYNOS_USBCON_VER_02_1_1;
+-			phy_drd->usbphy_info.refsel =
++			phy_drd->usbphy_info.refclk =
+ 						USBPHY_REFCLK_EXT_12MHZ;
+ 			phy_drd->usbphy_info.use_io_for_ovc = false;
+ 			phy_drd->usbphy_info.common_block_disable = false;
+-- 
+2.17.1
+

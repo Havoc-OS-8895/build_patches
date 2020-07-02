@@ -1,0 +1,59 @@
+From 94f2aaab9b8382aee1f8a993b5246179dd4964ea Mon Sep 17 00:00:00 2001
+From: Yaroslav Furman <yaro330@gmail.com>
+Date: Fri, 22 Jun 2018 21:08:21 +0300
+Subject: [PATCH 33/60] _cooling: move get_static_t declaration in thermal.h
+
+To avoid redefenition warning.
+Signed-off-by: Yaroslav Furman <yaro330@gmail.com>
+---
+ include/linux/cpu_cooling.h | 3 ---
+ include/linux/gpu_cooling.h | 3 ---
+ include/linux/thermal.h     | 4 ++++
+ 3 files changed, 4 insertions(+), 6 deletions(-)
+
+diff --git a/include/linux/cpu_cooling.h b/include/linux/cpu_cooling.h
+index 840fd18ba18e..2c915b1f36fd 100644
+--- a/include/linux/cpu_cooling.h
++++ b/include/linux/cpu_cooling.h
+@@ -28,9 +28,6 @@
+ #include <linux/thermal.h>
+ #include <linux/cpumask.h>
+ 
+-typedef int (*get_static_t)(cpumask_t *cpumask, int interval,
+-			    unsigned long voltage, u32 *power);
+-
+ /**
+  * struct cpufreq_cooling_device - data for cooling device with cpufreq
+  * @id: unique integer value corresponding to each cpufreq_cooling_device
+diff --git a/include/linux/gpu_cooling.h b/include/linux/gpu_cooling.h
+index ff29dde41f7b..b644d63137d7 100644
+--- a/include/linux/gpu_cooling.h
++++ b/include/linux/gpu_cooling.h
+@@ -28,9 +28,6 @@
+ #include <linux/thermal.h>
+ #include <linux/cpumask.h>
+ 
+-typedef int (*get_static_t)(cpumask_t *cpumask, int interval,
+-			    unsigned long voltage, u32 *power);
+-
+ #ifdef CONFIG_GPU_THERMAL
+ /**
+  * gpufreq_cooling_register - function to create gpufreq cooling device.
+diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+index 80e567ab66e7..9c6d4ce349f2 100644
+--- a/include/linux/thermal.h
++++ b/include/linux/thermal.h
+@@ -75,6 +75,10 @@ struct thermal_zone_device;
+ struct thermal_cooling_device;
+ struct thermal_instance;
+ 
++/* From cpu_cooling.h and gpu_cooling.h */
++typedef int (*get_static_t)(cpumask_t *cpumask, int interval,
++			    unsigned long voltage, u32 *power);
++
+ #ifdef CONFIG_SEC_DEBUG_HW_PARAM
+ enum thermal_zone_devices {
+ 	THERMAL_ZONE_MNGS = 0,
+-- 
+2.17.1
+

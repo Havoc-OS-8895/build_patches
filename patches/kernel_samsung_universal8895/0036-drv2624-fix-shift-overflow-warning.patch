@@ -1,0 +1,26 @@
+From 454cd46bc1c7cc021a7001be7ca5e6cc81f07ac3 Mon Sep 17 00:00:00 2001
+From: Yaroslav Furman <yaro330@gmail.com>
+Date: Fri, 22 Jun 2018 21:51:01 +0300
+Subject: [PATCH 36/60] drv2624: fix shift overflow warning
+
+Signed-off-by: Yaroslav Furman <yaro330@gmail.com>
+---
+ include/linux/drv2624.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/include/linux/drv2624.h b/include/linux/drv2624.h
+index 2b4097e7fb2f..63828dbedc15 100644
+--- a/include/linux/drv2624.h
++++ b/include/linux/drv2624.h
+@@ -321,7 +321,7 @@ struct drv2624_diag_result {
+ 	unsigned char mnDiagK;
+ };
+ 
+-#define	DRV2624_MAGIC_NUMBER	0x32363234	/* '2624' */
++#define	DRV2624_MAGIC_NUMBER	0x32363234 & 0x1f	/* '2624' */
+ 
+ #define	DRV2624_SET_SEQ_LOOP	 			_IOWR(DRV2624_MAGIC_NUMBER, 1, struct drv2624_seq_loop *)
+ #define	DRV2624_SET_MAIN	 				_IOWR(DRV2624_MAGIC_NUMBER, 2, struct drv2624_wave_setting *)
+-- 
+2.17.1
+

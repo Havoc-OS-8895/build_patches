@@ -1,0 +1,1084 @@
+From 7c0139dca6ef34607ab69e119e317d34778d609f Mon Sep 17 00:00:00 2001
+From: Diep Quynh <remilia.1505@gmail.com>
+Date: Wed, 27 Nov 2019 14:13:05 +0700
+Subject: [PATCH 4/7] power: Adapt libperfmgr PowerHAL
+
+Based off Pixel 2's PowerHAL
+https://android.googlesource.com/device/google/wahoo/+/refs/tags/android-9.0.0_r50/power-libperfmgr/
+
+Fixes from universal9810's PowerHAL, Lineage Exynos PowerHAL
+https://github.com/LineageOS/android_device_samsung_universal9810-common/tree/lineage-15.1/power
+https://github.com/LineageOS/android_hardware_samsung/tree/lineage-17.1/hidl/power
+
+Change-Id: I3bca10c9492249255d296cc5a8b95278a67668a6
+Signed-off-by: Diep Quynh <remilia.1505@gmail.com>
+---
+ device-common.mk                              |   7 +-
+ manifest.xml                                  |  11 +-
+ power-libperfmgr/Android.bp                   |  39 ++
+ power-libperfmgr/InteractionHandler.cpp       | 163 ++++++++
+ power-libperfmgr/InteractionHandler.h         |  67 ++++
+ power-libperfmgr/Power.cpp                    | 367 ++++++++++++++++++
+ power-libperfmgr/Power.h                      |  91 +++++
+ ...dware.power@1.3-service.8895-libperfmgr.rc |   9 +
+ power-libperfmgr/service.cpp                  |  59 +++
+ powerhint.json                                | 140 +++++++
+ ramdisk/etc/init.samsungexynos8895.rc         |   3 +
+ 11 files changed, 944 insertions(+), 12 deletions(-)
+ create mode 100644 power-libperfmgr/Android.bp
+ create mode 100644 power-libperfmgr/InteractionHandler.cpp
+ create mode 100644 power-libperfmgr/InteractionHandler.h
+ create mode 100644 power-libperfmgr/Power.cpp
+ create mode 100644 power-libperfmgr/Power.h
+ create mode 100644 power-libperfmgr/android.hardware.power@1.3-service.8895-libperfmgr.rc
+ create mode 100644 power-libperfmgr/service.cpp
+ create mode 100644 powerhint.json
+
+diff --git a/device-common.mk b/device-common.mk
+index 0244335..861fb53 100644
+--- a/device-common.mk
++++ b/device-common.mk
+@@ -172,9 +172,12 @@ PRODUCT_PACKAGES += \
+     com.android.nfc_extras \
+     libclang_rt.ubsan_standalone-aarch64-android
+ 
+-# Power
++# PowerHAL
+ PRODUCT_PACKAGES += \
+-    android.hardware.power@1.0-service.exynos
++    android.hardware.power@1.3-service.8895-libperfmgr
++
++PRODUCT_COPY_FILES += \
++    $(LOCAL_PATH)/powerhint.json:$(TARGET_COPY_OUT_VENDOR)/etc/powerhint.json
+ 
+ # Permissions
+ PRODUCT_COPY_FILES += \
+diff --git a/manifest.xml b/manifest.xml
+index d5e52ce..cf03190 100644
+--- a/manifest.xml
++++ b/manifest.xml
+@@ -187,7 +187,7 @@
+     <hal format="hidl">
+         <name>android.hardware.power</name>
+         <transport>hwbinder</transport>
+-        <version>1.0</version>
++        <version>1.3</version>
+         <interface>
+             <name>IPower</name>
+             <instance>default</instance>
+@@ -293,15 +293,6 @@
+             <instance>default</instance>
+         </interface>
+     </hal>
+-    <hal format="hidl">
+-        <name>vendor.lineage.power</name>
+-        <transport>hwbinder</transport>
+-        <version>1.0</version>
+-        <interface>
+-            <name>ILineagePower</name>
+-            <instance>default</instance>
+-        </interface>
+-    </hal>
+     <hal format="hidl">
+         <name>vendor.lineage.trust</name>
+         <transport>hwbinder</transport>
+diff --git a/power-libperfmgr/Android.bp b/power-libperfmgr/Android.bp
+new file mode 100644
+index 0000000..793e710
+--- /dev/null
++++ b/power-libperfmgr/Android.bp
+@@ -0,0 +1,39 @@
++//
++// Copyright (C) 2018 The Android Open Source Project
++//
++// Licensed under the Apache License, Version 2.0 (the "License");
++// you may not use this file except in compliance with the License.
++// You may obtain a copy of the License at
++//
++//      http://www.apache.org/licenses/LICENSE-2.0
++//
++// Unless required by applicable law or agreed to in writing, software
++// distributed under the License is distributed on an "AS IS" BASIS,
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++// See the License for the specific language governing permissions and
++// limitations under the License.
++cc_binary {
++    name: "android.hardware.power@1.3-service.8895-libperfmgr",
++    relative_install_path: "hw",
++    init_rc: ["android.hardware.power@1.3-service.8895-libperfmgr.rc"],
++    srcs: ["service.cpp", "Power.cpp", "InteractionHandler.cpp"],
++    cflags: [
++        "-Wall",
++        "-Werror",
++    ],
++    shared_libs: [
++        "libbase",
++        "libhidlbase",
++        "libhidltransport",
++        "liblog",
++        "libutils",
++        "libcutils",
++        "android.hardware.power@1.0",
++        "android.hardware.power@1.1",
++        "android.hardware.power@1.2",
++        "android.hardware.power@1.3",
++        "libperfmgr",
++    ],
++    static_libs: ["libc++fs"],
++    proprietary: true,
++}
+diff --git a/power-libperfmgr/InteractionHandler.cpp b/power-libperfmgr/InteractionHandler.cpp
+new file mode 100644
+index 0000000..f25fbbf
+--- /dev/null
++++ b/power-libperfmgr/InteractionHandler.cpp
+@@ -0,0 +1,163 @@
++/*
++ * Copyright (C) 2018 The Android Open Source Project
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++//#define LOG_NDEBUG 0
++
++#define LOG_TAG "android.hardware.power@1.3-service.8895-libperfmgr"
++#define ATRACE_TAG (ATRACE_TAG_POWER | ATRACE_TAG_HAL)
++
++#include <fcntl.h>
++#include <poll.h>
++#include <sys/eventfd.h>
++#include <time.h>
++#include <unistd.h>
++#include <utils/Log.h>
++#include <utils/Trace.h>
++
++#include "InteractionHandler.h"
++
++#define MSINSEC 1000L
++#define USINMS 1000000L
++
++InteractionHandler::InteractionHandler(std::shared_ptr<HintManager> const & hint_manager)
++    : mState(INTERACTION_STATE_UNINITIALIZED),
++      mMinDurationMs(1400),
++      mMaxDurationMs(5650),
++      mDurationMs(0),
++      mHintManager(hint_manager) {
++}
++
++InteractionHandler::~InteractionHandler() {
++    Exit();
++}
++
++bool InteractionHandler::Init() {
++    std::lock_guard<std::mutex> lk(mLock);
++
++    if (mState != INTERACTION_STATE_UNINITIALIZED)
++        return true;
++
++    mState = INTERACTION_STATE_IDLE;
++    mThread = std::unique_ptr<std::thread>(
++        new std::thread(&InteractionHandler::Routine, this));
++
++    return true;
++}
++
++void InteractionHandler::Exit() {
++    std::unique_lock<std::mutex> lk(mLock);
++    if (mState == INTERACTION_STATE_UNINITIALIZED)
++        return;
++
++    mState = INTERACTION_STATE_UNINITIALIZED;
++    lk.unlock();
++
++    mCond.notify_all();
++    mThread->join();
++}
++
++void InteractionHandler::PerfLock() {
++    ALOGV("%s: acquiring perf lock", __func__);
++    if (!mHintManager->DoHint("INTERACTION")) {
++        ALOGE("%s: do hint INTERACTION failed", __func__);
++    }
++    ATRACE_INT("interaction_lock", 1);
++}
++
++void InteractionHandler::PerfRel() {
++    ALOGV("%s: releasing perf lock", __func__);
++    if (!mHintManager->EndHint("INTERACTION")) {
++        ALOGE("%s: end hint INTERACTION failed", __func__);
++    }
++    ATRACE_INT("interaction_lock", 0);
++}
++
++long long InteractionHandler::CalcTimespecDiffMs(struct timespec start,
++                                               struct timespec end) {
++    long long diff_in_us = 0;
++    diff_in_us += (end.tv_sec - start.tv_sec) * MSINSEC;
++    diff_in_us += (end.tv_nsec - start.tv_nsec) / USINMS;
++    return diff_in_us;
++}
++
++void InteractionHandler::Acquire(int32_t duration) {
++    ATRACE_CALL();
++
++    std::lock_guard<std::mutex> lk(mLock);
++    if (mState == INTERACTION_STATE_UNINITIALIZED) {
++        ALOGW("%s: called while uninitialized", __func__);
++        return;
++    }
++
++    int inputDuration = duration + 650;
++    int finalDuration;
++    if (inputDuration > mMaxDurationMs)
++        finalDuration = mMaxDurationMs;
++    else if (inputDuration > mMinDurationMs)
++        finalDuration = inputDuration;
++    else
++        finalDuration = mMinDurationMs;
++
++    struct timespec cur_timespec;
++    clock_gettime(CLOCK_MONOTONIC, &cur_timespec);
++    if (mState != INTERACTION_STATE_IDLE && finalDuration <= mDurationMs) {
++        long long elapsed_time = CalcTimespecDiffMs(mLastTimespec, cur_timespec);
++        // don't hint if previous hint's duration covers this hint's duration
++        if (elapsed_time <= (mDurationMs - finalDuration)) {
++            ALOGV("%s: Previous duration (%d) cover this (%d) elapsed: %lld",
++                  __func__, mDurationMs, finalDuration, elapsed_time);
++            return;
++        }
++    }
++    mLastTimespec = cur_timespec;
++    mDurationMs = finalDuration;
++
++    ALOGV("%s: input: %d final duration: %d", __func__,
++          duration, finalDuration);
++
++    if (mState == INTERACTION_STATE_IDLE) {
++        PerfLock();
++        mState = INTERACTION_STATE_INTERACTION;
++    }
++
++    mHandled = false;
++    mCond.notify_one();
++}
++
++void InteractionHandler::Release() {
++    std::lock_guard<std::mutex> lk(mLock);
++    ATRACE_CALL();
++    PerfRel();
++    mState = INTERACTION_STATE_IDLE;
++}
++
++void InteractionHandler::Routine() {
++    std::unique_lock<std::mutex> lk(mLock, std::defer_lock);
++
++    while (true) {
++        lk.lock();
++        mCond.wait(lk, [&] { return mState != INTERACTION_STATE_IDLE; });
++        if (mState == INTERACTION_STATE_UNINITIALIZED)
++            return;
++        mHandled = true;
++        mState = INTERACTION_STATE_WAITING;
++        lk.unlock();
++
++        std::this_thread::sleep_for(std::chrono::milliseconds(mDurationMs));
++        if (mHandled)
++            Release();
++    }
++}
+diff --git a/power-libperfmgr/InteractionHandler.h b/power-libperfmgr/InteractionHandler.h
+new file mode 100644
+index 0000000..3a7c0b6
+--- /dev/null
++++ b/power-libperfmgr/InteractionHandler.h
+@@ -0,0 +1,67 @@
++/*
++ * Copyright (C) 2018 The Android Open Source Project
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++#ifndef INTERACTIONHANDLER_H
++#define INTERACTIONHANDLER_H
++
++#include <condition_variable>
++#include <mutex>
++#include <thread>
++
++#include <perfmgr/HintManager.h>
++
++using ::android::perfmgr::HintManager;
++
++enum interaction_state {
++    INTERACTION_STATE_UNINITIALIZED,
++    INTERACTION_STATE_IDLE,
++    INTERACTION_STATE_INTERACTION,
++    INTERACTION_STATE_WAITING,
++};
++
++struct InteractionHandler {
++    InteractionHandler(std::shared_ptr<HintManager> const & hint_manager);
++    ~InteractionHandler();
++    bool Init();
++    void Exit();
++    void Acquire(int32_t duration);
++
++ private:
++    void Release();
++    void Routine();
++
++    void PerfLock();
++    void PerfRel();
++
++    long long CalcTimespecDiffMs(struct timespec start, struct timespec end);
++
++    enum interaction_state mState;
++
++    int32_t mMinDurationMs;
++    int32_t mMaxDurationMs;
++    int32_t mDurationMs;
++
++    struct timespec mLastTimespec;
++
++    bool mHandled;
++
++    std::unique_ptr<std::thread> mThread;
++    std::mutex mLock;
++    std::condition_variable mCond;
++    std::shared_ptr<HintManager> mHintManager;
++};
++
++#endif //INTERACTIONHANDLER_H
+diff --git a/power-libperfmgr/Power.cpp b/power-libperfmgr/Power.cpp
+new file mode 100644
+index 0000000..2b189bb
+--- /dev/null
++++ b/power-libperfmgr/Power.cpp
+@@ -0,0 +1,367 @@
++/*
++ * Copyright (C) 2018 The Android Open Source Project
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++#define ATRACE_TAG (ATRACE_TAG_POWER | ATRACE_TAG_HAL)
++#define LOG_TAG "android.hardware.power@1.3-service.8895-libperfmgr"
++
++#include <android-base/file.h>
++#include <android-base/logging.h>
++#include <android-base/properties.h>
++#include <android-base/strings.h>
++#include <android-base/stringprintf.h>
++
++#include <filesystem>
++#include <fstream>
++#include <iostream>
++#include <mutex>
++
++#include <utils/Log.h>
++#include <utils/Trace.h>
++
++#include "Power.h"
++
++namespace android {
++namespace hardware {
++namespace power {
++namespace V1_3 {
++namespace implementation {
++
++using ::android::hardware::power::V1_0::Feature;
++using ::android::hardware::power::V1_0::PowerStatePlatformSleepState;
++using ::android::hardware::power::V1_0::Status;
++using ::android::hardware::power::V1_1::PowerStateSubsystem;
++using ::android::hardware::power::V1_1::PowerStateSubsystemSleepState;
++using ::android::hardware::hidl_vec;
++using ::android::hardware::Return;
++using ::android::hardware::Void;
++
++Power::Power() :
++        mHintManager(HintManager::GetFromJSON("/vendor/etc/powerhint.json")),
++        mInteractionHandler(mHintManager),
++        mVRModeOn(false),
++        mSustainedPerfModeOn(false) {
++    mInteractionHandler.Init();
++
++    std::string state = android::base::GetProperty(kPowerHalStateProp, "");
++    if (state ==  "SUSTAINED_PERFORMANCE") {
++        ALOGI("Initialize with SUSTAINED_PERFORMANCE on");
++        mHintManager->DoHint("SUSTAINED_PERFORMANCE");
++        mSustainedPerfModeOn = true;
++    } else if (state == "VR_MODE") {
++        ALOGI("Initialize with VR_MODE on");
++        mHintManager->DoHint("VR_MODE");
++        mVRModeOn = true;
++    } else if (state == "VR_SUSTAINED_PERFORMANCE") {
++        ALOGI("Initialize with SUSTAINED_PERFORMANCE and VR_MODE on");
++        mHintManager->DoHint("VR_SUSTAINED_PERFORMANCE");
++        mSustainedPerfModeOn = true;
++        mVRModeOn = true;
++    } else {
++        ALOGI("Initialize PowerHAL");
++    }
++}
++
++/*
++ * Write value to path and close file.
++ */
++template <typename T>
++static void set(const std::string& path, const T& value) {
++    std::ofstream file(path);
++    file << value << std::endl;
++}
++
++template <typename T>
++static T get(const std::string& path, const T& def) {
++    std::ifstream file(path);
++    T result;
++
++    file >> result;
++    return file.fail() ? def : result;
++}
++
++// Methods from ::android::hardware::power::V1_0::IPower follow.
++Return<void> Power::setInteractive(bool interactive)  {
++    if (!nodes_found) {
++        findInputNodes();
++    }
++
++    if (!interactive) {
++        int32_t panel_brightness = get(PANEL_BRIGHTNESS_NODE, -1);
++
++        if (panel_brightness > 0) {
++            LOG(VERBOSE) << "Moving to non-interactive state, but screen is still on,"
++                         << "not disabling input devices";
++            return Void();
++        }
++    }
++
++    if (!sec_touchscreen.empty()) {
++        set(sec_touchscreen, interactive ? "1" : "0");
++    }
++
++    if (!sec_touchkey.empty()) {
++        if (!interactive) {
++            int button_state = get(sec_touchkey, -1);
++
++            if (button_state < 0) {
++                LOG(ERROR) << "Failed to read touchkey state";
++                return Void();
++            }
++
++            /*
++             * If button_state is 0, the keys have been disabled by another component
++             * (for example lineagehw), which means we don't want them to be enabled when resuming
++             * from suspend.
++             */
++            if (button_state == 0) {
++                touchkeys_blocked = true;
++            }
++        }
++
++        if (!touchkeys_blocked) {
++            set(sec_touchkey, interactive ? "1" : "0");
++        }
++    }
++
++    return Void();
++}
++
++Return<void> Power::powerHint(PowerHint_1_0 hint, int32_t data) {
++    if (!isSupportedGovernor()) {
++        return Void();
++    }
++
++    switch(hint) {
++        case PowerHint_1_0::INTERACTION:
++            if (mVRModeOn || mSustainedPerfModeOn) {
++                ALOGV("%s: ignoring due to other active perf hints", __func__);
++            } else {
++                mInteractionHandler.Acquire(data);
++            }
++            break;
++        case PowerHint_1_0::SUSTAINED_PERFORMANCE:
++            if (data && !mSustainedPerfModeOn) {
++                ALOGD("SUSTAINED_PERFORMANCE ON");
++                if (!mVRModeOn) { // Sustained mode only.
++                    mHintManager->DoHint("SUSTAINED_PERFORMANCE");
++                    if (!android::base::SetProperty(kPowerHalStateProp, "SUSTAINED_PERFORMANCE")) {
++                        ALOGE("%s: could not set powerHAL state property to SUSTAINED_PERFORMANCE", __func__);
++                    }
++                } else { // Sustained + VR mode.
++                    mHintManager->EndHint("VR_MODE");
++                    mHintManager->DoHint("VR_SUSTAINED_PERFORMANCE");
++                    if (!android::base::SetProperty(kPowerHalStateProp, "VR_SUSTAINED_PERFORMANCE")) {
++                        ALOGE("%s: could not set powerHAL state property to VR_SUSTAINED_PERFORMANCE", __func__);
++                    }
++                }
++                mSustainedPerfModeOn = true;
++            } else if (!data && mSustainedPerfModeOn) {
++                ALOGD("SUSTAINED_PERFORMANCE OFF");
++                mHintManager->EndHint("VR_SUSTAINED_PERFORMANCE");
++                mHintManager->EndHint("SUSTAINED_PERFORMANCE");
++                if (mVRModeOn) { // Switch back to VR Mode.
++                    mHintManager->DoHint("VR_MODE");
++                    if (!android::base::SetProperty(kPowerHalStateProp, "VR_MODE")) {
++                        ALOGE("%s: could not set powerHAL state property to VR_MODE", __func__);
++                    }
++                } else {
++                    if (!android::base::SetProperty(kPowerHalStateProp, "")) {
++                        ALOGE("%s: could not clear powerHAL state property", __func__);
++                    }
++                }
++                mSustainedPerfModeOn = false;
++            }
++            break;
++        case PowerHint_1_0::VR_MODE:
++            if (data && !mVRModeOn) {
++                ALOGD("VR_MODE ON");
++                if (!mSustainedPerfModeOn) { // VR mode only.
++                    mHintManager->DoHint("VR_MODE");
++                    if (!android::base::SetProperty(kPowerHalStateProp, "VR_MODE")) {
++                        ALOGE("%s: could not set powerHAL state property to VR_MODE", __func__);
++                    }
++                } else { // Sustained + VR mode.
++                    mHintManager->EndHint("SUSTAINED_PERFORMANCE");
++                    mHintManager->DoHint("VR_SUSTAINED_PERFORMANCE");
++                    if (!android::base::SetProperty(kPowerHalStateProp, "VR_SUSTAINED_PERFORMANCE")) {
++                        ALOGE("%s: could not set powerHAL state property to VR_SUSTAINED_PERFORMANCE", __func__);
++                    }
++                }
++                mVRModeOn = true;
++            } else if (!data && mVRModeOn) {
++                ALOGD("VR_MODE OFF");
++                mHintManager->EndHint("VR_SUSTAINED_PERFORMANCE");
++                mHintManager->EndHint("VR_MODE");
++                if (mSustainedPerfModeOn) { // Switch back to sustained Mode.
++                    mHintManager->DoHint("SUSTAINED_PERFORMANCE");
++                    if (!android::base::SetProperty(kPowerHalStateProp, "SUSTAINED_PERFORMANCE")) {
++                        ALOGE("%s: could not set powerHAL state property to SUSTAINED_PERFORMANCE", __func__);
++                    }
++                } else {
++                    if (!android::base::SetProperty(kPowerHalStateProp, "")) {
++                        ALOGE("%s: could not clear powerHAL state property", __func__);
++                    }
++                }
++                mVRModeOn = false;
++            }
++            break;
++        case PowerHint_1_0::LAUNCH:
++            ATRACE_BEGIN("launch");
++            if (mVRModeOn || mSustainedPerfModeOn) {
++                ALOGV("%s: ignoring due to other active perf hints", __func__);
++            } else {
++                if (data) {
++                    // Hint until canceled
++                    ATRACE_INT("launch_lock", 1);
++                    mHintManager->DoHint("LAUNCH");
++                    ALOGD("LAUNCH ON");
++                } else {
++                    ATRACE_INT("launch_lock", 0);
++                    mHintManager->EndHint("LAUNCH");
++                    ALOGD("LAUNCH OFF");
++                }
++            }
++            ATRACE_END();
++            break;
++        default:
++            break;
++
++    }
++    return Void();
++}
++
++Return<void> Power::setFeature(Feature /*feature*/, bool /*activate*/)  {
++    //Nothing to do
++    return Void();
++}
++
++Return<void> Power::getPlatformLowPowerStats(getPlatformLowPowerStats_cb _hidl_cb) {
++
++    hidl_vec<PowerStatePlatformSleepState> states;
++    _hidl_cb(states, Status::SUCCESS);
++    return Void();
++}
++
++void Power::findInputNodes() {
++    std::error_code ec;
++    for (auto& de : std::filesystem::directory_iterator("/sys/class/input/", ec)) {
++        /* we are only interested in the input devices that we can access */
++        if (ec || de.path().string().find("/sys/class/input/input") == std::string::npos) {
++            continue;
++        }
++
++        for (auto& de2 : std::filesystem::directory_iterator(de.path(), ec)) {
++            if (!ec && de2.path().string().find("/name") != std::string::npos) {
++                std::string content = get<std::string>(de2.path(), "");
++                if (content == "sec_touchkey") {
++                    sec_touchkey = de.path().string().append("/enabled");
++                    LOG(INFO) << "found sec_touchkey: " << sec_touchkey;
++                } else if (content == "sec_touchscreen") {
++                    sec_touchscreen = de.path().string().append("/enabled");
++                    LOG(INFO) << "found sec_touchscreen: " << sec_touchscreen;
++                }
++            }
++        }
++    }
++}
++
++// Methods from ::android::hardware::power::V1_1::IPower follow.
++Return<void> Power::getSubsystemLowPowerStats(getSubsystemLowPowerStats_cb _hidl_cb) {
++    hidl_vec<PowerStateSubsystem> subsystems;
++    _hidl_cb(subsystems, Status::SUCCESS);
++    return Void();
++}
++
++bool Power::isSupportedGovernor() {
++    std::string buf;
++    if (android::base::ReadFileToString("/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor", &buf)) {
++        buf = android::base::Trim(buf);
++    }
++    // Only support EAS 1.2, legacy EAS
++    if (buf == "schedutil" || buf == "sched") {
++        return true;
++    } else {
++        LOG(ERROR) << "Governor not supported by powerHAL, skipping";
++        return false;
++    }
++}
++
++Return<void> Power::powerHintAsync(PowerHint_1_0 hint, int32_t data) {
++    // just call the normal power hint in this oneway function
++    return powerHint(hint, data);
++}
++
++// Methods from ::android::hardware::power::V1_2::IPower follow.
++Return<void> Power::powerHintAsync_1_2(PowerHint_1_2 hint, int32_t data) {
++    if (!isSupportedGovernor()) {
++        return Void();
++    }
++
++    return powerHint(static_cast<PowerHint_1_0>(hint), data);
++}
++
++// Methods from ::android::hardware::power::V1_3::IPower follow.
++Return<void> Power::powerHintAsync_1_3(PowerHint_1_3 hint, int32_t data) {
++    if (!isSupportedGovernor()) {
++        return Void();
++    }
++
++    if (hint == PowerHint_1_3::EXPENSIVE_RENDERING) {
++        if (mSustainedPerfModeOn) {
++            return Void();
++        }
++
++        if (data > 0) {
++            mHintManager->DoHint("EXPENSIVE_RENDERING");
++        } else {
++            mHintManager->EndHint("EXPENSIVE_RENDERING");
++        }
++    } else {
++        return powerHintAsync_1_2(static_cast<PowerHint_1_2>(hint), data);
++    }
++
++    return Void();
++}
++
++constexpr const char* boolToString(bool b) {
++    return b ? "true" : "false";
++}
++
++Return<void> Power::debug(const hidl_handle& handle, const hidl_vec<hidl_string>&) {
++    if (handle != nullptr && handle->numFds >= 1) {
++        int fd = handle->data[0];
++
++        std::string buf(android::base::StringPrintf("HintManager Running: %s\n"
++                                                    "VRMode: %s\n"
++                                                    "SustainedPerformanceMode: %s\n",
++                                                    boolToString(mHintManager->IsRunning()),
++                                                    boolToString(mVRModeOn),
++                                                    boolToString(mSustainedPerfModeOn)));
++        // Dump nodes through libperfmgr
++        mHintManager->DumpToFd(fd);
++        if (!android::base::WriteStringToFd(buf, fd)) {
++            PLOG(ERROR) << "Failed to dump state to fd";
++        }
++        fsync(fd);
++    }
++    return Void();
++}
++
++}  // namespace implementation
++}  // namespace V1_3
++}  // namespace power
++}  // namespace hardware
++}  // namespace android
+diff --git a/power-libperfmgr/Power.h b/power-libperfmgr/Power.h
+new file mode 100644
+index 0000000..26a88ce
+--- /dev/null
++++ b/power-libperfmgr/Power.h
+@@ -0,0 +1,91 @@
++/*
++ * Copyright (C) 2018 The Android Open Source Project
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++#ifndef ANDROID_HARDWARE_POWER_V1_3_POWER_H
++#define ANDROID_HARDWARE_POWER_V1_3_POWER_H
++
++#include <atomic>
++
++#include <android/hardware/power/1.3/IPower.h>
++#include <hidl/MQDescriptor.h>
++#include <hidl/Status.h>
++#include <perfmgr/HintManager.h>
++
++#include "InteractionHandler.h"
++
++namespace android {
++namespace hardware {
++namespace power {
++namespace V1_3 {
++namespace implementation {
++
++using ::android::hardware::power::V1_0::Feature;
++using ::android::hardware::power::V1_3::IPower;
++using ::android::hardware::Return;
++using ::android::hardware::Void;
++using ::InteractionHandler;
++using PowerHint_1_0 = ::android::hardware::power::V1_0::PowerHint;
++using PowerHint_1_2 = ::android::hardware::power::V1_2::PowerHint;
++using PowerHint_1_3 = ::android::hardware::power::V1_3::PowerHint;
++using ::android::perfmgr::HintManager;
++
++#define PANEL_BRIGHTNESS_NODE "/sys/class/backlight/panel/brightness"
++constexpr char kPowerHalStateProp[] = "vendor.powerhal.state";
++
++struct Power : public IPower {
++    // Methods from ::android::hardware::power::V1_0::IPower follow.
++
++    Power();
++
++    Return<void> setInteractive(bool /* interactive */) override;
++    Return<void> powerHint(PowerHint_1_0 hint, int32_t data) override;
++    Return<void> setFeature(Feature feature, bool activate) override;
++    Return<void> getPlatformLowPowerStats(getPlatformLowPowerStats_cb _hidl_cb) override;
++
++    // Methods from ::android::hardware::power::V1_1::IPower follow.
++    Return<void> getSubsystemLowPowerStats(getSubsystemLowPowerStats_cb _hidl_cb) override;
++    Return<void> powerHintAsync(PowerHint_1_0 hint, int32_t data) override;
++
++    // Methods from ::android::hardware::power::V1_2::IPower follow.
++    Return<void> powerHintAsync_1_2(PowerHint_1_2 hint, int32_t data) override;
++
++    // Methods from ::android::hardware::power::V1_3::IPower follow.
++    Return<void> powerHintAsync_1_3(PowerHint_1_3 hint, int32_t data) override;
++
++    // Methods from ::android::hidl::base::V1_0::IBase follow.
++    Return<void> debug(const hidl_handle& fd, const hidl_vec<hidl_string>& args) override;
++
++ private:
++    static bool isSupportedGovernor();
++    void findInputNodes();
++    bool nodes_found;
++    bool touchkeys_blocked;
++
++    std::string sec_touchkey;
++    std::string sec_touchscreen;
++    std::shared_ptr<HintManager> mHintManager;
++    InteractionHandler mInteractionHandler;
++    std::atomic<bool> mVRModeOn;
++    std::atomic<bool> mSustainedPerfModeOn;
++};
++
++}  // namespace implementation
++}  // namespace V1_3
++}  // namespace power
++}  // namespace hardware
++}  // namespace android
++
++#endif  // ANDROID_HARDWARE_POWER_V1_3_POWER_H
+diff --git a/power-libperfmgr/android.hardware.power@1.3-service.8895-libperfmgr.rc b/power-libperfmgr/android.hardware.power@1.3-service.8895-libperfmgr.rc
+new file mode 100644
+index 0000000..396c12b
+--- /dev/null
++++ b/power-libperfmgr/android.hardware.power@1.3-service.8895-libperfmgr.rc
+@@ -0,0 +1,9 @@
++service vendor.power-hal-1-3 /vendor/bin/hw/android.hardware.power@1.3-service.8895-libperfmgr
++    class hal
++    user system
++    group system
++
++# restart powerHAL when framework died
++on property:init.svc.zygote=restarting && property:vendor.powerhal.state=*
++   setprop vendor.powerhal.state ""
++   restart vendor.power-hal-1-3
+diff --git a/power-libperfmgr/service.cpp b/power-libperfmgr/service.cpp
+new file mode 100644
+index 0000000..f74c5d1
+--- /dev/null
++++ b/power-libperfmgr/service.cpp
+@@ -0,0 +1,59 @@
++/*
++ * Copyright (C) 2018 The Android Open Source Project
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++#define LOG_TAG "android.hardware.power@1.3-service.8895-libperfmgr"
++
++#include <android/log.h>
++#include <hidl/HidlTransportSupport.h>
++
++#include "Power.h"
++
++using android::sp;
++using android::status_t;
++using android::OK;
++
++// libhwbinder:
++using android::hardware::configureRpcThreadpool;
++using android::hardware::joinRpcThreadpool;
++
++// Generated HIDL files
++using android::hardware::power::V1_3::IPower;
++using android::hardware::power::V1_3::implementation::Power;
++
++int main(int /* argc */, char** /* argv */) {
++    ALOGI("Power HAL Service 1.3 for Exynos 8895 is starting");
++
++    android::sp<IPower> service = new Power();
++    if (service == nullptr) {
++        ALOGE("Can not create an instance of Power HAL Iface, exiting.");
++        return 1;
++    }
++
++    configureRpcThreadpool(1, true /*callerWillJoin*/);
++
++    status_t status = service->registerAsService();
++    if (status != OK) {
++        ALOGE("Could not register service for Power HAL Iface (%d), exiting.", status);
++        return 1;
++    }
++
++    ALOGI("Power Service is ready");
++    joinRpcThreadpool();
++
++    // In normal operation, we don't expect the thread pool to exit
++    ALOGE("Power Service is shutting down");
++    return 1;
++}
+diff --git a/powerhint.json b/powerhint.json
+new file mode 100644
+index 0000000..0cc233f
+--- /dev/null
++++ b/powerhint.json
+@@ -0,0 +1,140 @@
++{
++  "Nodes": [
++    {
++      "Name": "CPUBigClusterMaxFreq",
++      "Path": "/sys/power/cpufreq_max_limit",
++      "Values": [
++        "2314000",
++        "1703000",
++        "1469000"
++      ],
++      "DefaultIndex": 0,
++      "ResetOnInit": true
++    },
++    {
++      "Name": "CPUBigClusterMinFreq",
++      "Path": "/sys/power/cpufreq_min_limit",
++      "Values": [
++        "2314000",
++        "1703000",
++        "1469000",
++        "741000",
++        "-1"
++      ],
++      "ResetOnInit": true
++    },
++    {
++      "Name": "GPUMaxFreq",
++      "Path": "/sys/kernel/gpu/gpu_max_clock",
++      "Values": [
++        "455000",
++        "546000"
++      ],
++      "ResetOnInit": true
++    },
++    {
++      "Name": "GPUMinFreq",
++      "Path": "/sys/kernel/gpu/gpu_min_clock",
++      "Values": [
++        "455000",
++        "260000"
++      ],
++      "ResetOnInit": true
++    },
++    {
++      "Name": "PMQoSCpuDmaLatency",
++      "Path": "/dev/cpu_dma_latency",
++      "Values": [
++        "2",
++        "-1"
++      ],
++      "HoldFd": true
++    }
++  ],
++  "Actions": [
++    {
++      "PowerHint": "SUSTAINED_PERFORMANCE",
++      "Node": "CPUBigClusterMaxFreq",
++      "Duration": 0,
++      "Value": "1703000"
++    },
++    {
++      "PowerHint": "SUSTAINED_PERFORMANCE",
++      "Node": "GPUMaxFreq",
++      "Duration": 0,
++      "Value": "455000"
++    },
++    {
++      "PowerHint": "VR_MODE",
++      "Node": "CPUBigClusterMaxFreq",
++      "Duration": 0,
++      "Value": "1703000"
++    },
++    {
++      "PowerHint": "VR_MODE",
++      "Node": "CPUBigClusterMinFreq",
++      "Duration": 0,
++      "Value": "1703000"
++    },
++    {
++      "PowerHint": "VR_MODE",
++      "Node": "GPUMaxFreq",
++      "Duration": 0,
++      "Value": "455000"
++    },
++    {
++      "PowerHint": "VR_MODE",
++      "Node": "GPUMinFreq",
++      "Duration": 0,
++      "Value": "455000"
++    },
++    {
++      "PowerHint": "VR_SUSTAINED_PERFORMANCE",
++      "Node": "CPUBigClusterMaxFreq",
++      "Duration": 0,
++      "Value": "1469000"
++    },
++    {
++      "PowerHint": "VR_SUSTAINED_PERFORMANCE",
++      "Node": "CPUBigClusterMinFreq",
++      "Duration": 0,
++      "Value": "1469000"
++    },
++    {
++      "PowerHint": "INTERACTION",
++      "Node": "CPUBigClusterMinFreq",
++      "Duration": 0,
++      "Value": "741000"
++    },
++    {
++      "PowerHint": "LAUNCH",
++      "Node": "CPUBigClusterMaxFreq",
++      "Duration": 0,
++      "Value": "2314000"
++    },
++    {
++      "PowerHint": "LAUNCH",
++      "Node": "CPUBigClusterMinFreq",
++      "Duration": 0,
++      "Value": "2314000"
++    },
++    {
++      "PowerHint": "LAUNCH",
++      "Node": "PMQoSCpuDmaLatency",
++      "Duration": 0,
++      "Value": "2"
++    },
++    {
++      "PowerHint": "EXPENSIVE_RENDERING",
++      "Node": "GPUMinFreq",
++      "Duration": 0,
++      "Value": "455000"
++    },
++    {
++      "PowerHint": "EXPENSIVE_RENDERING",
++      "Node": "GPUMaxFreq",
++      "Duration": 0,
++      "Value": "546000"
++    }
++  ]
++}
+diff --git a/ramdisk/etc/init.samsungexynos8895.rc b/ramdisk/etc/init.samsungexynos8895.rc
+index 3bf4eb4..56193d6 100644
+--- a/ramdisk/etc/init.samsungexynos8895.rc
++++ b/ramdisk/etc/init.samsungexynos8895.rc
+@@ -189,6 +189,9 @@ on post-fs-data
+     chown wifi root /efs/wifi/.mac.cob
+     chmod 0664 /efs/wifi/.mac.cob
+ 
++# PowerHAL
++    chown system system /dev/cpu_dma_latency
++
+ on boot
+ # SSWAP
+     write /proc/sys/vm/swappiness 160
+-- 
+2.17.1
+

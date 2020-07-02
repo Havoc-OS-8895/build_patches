@@ -1,0 +1,35 @@
+From d2317a84a405b3a676a2160fc82a30a665b0ebb8 Mon Sep 17 00:00:00 2001
+From: Michael Benedict <michaelbt@live.com>
+Date: Mon, 30 Dec 2019 16:12:50 +1100
+Subject: [PATCH 15/60] dts: early mount efs
+
+system was early mounted and it doesnt have the time to import efs prop, so early mount efs too
+
+Signed-off-by: Michael Benedict <michaelbt@live.com>
+---
+ arch/arm64/boot/dts/exynos/exynos8895.dtsi | 9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
+
+diff --git a/arch/arm64/boot/dts/exynos/exynos8895.dtsi b/arch/arm64/boot/dts/exynos/exynos8895.dtsi
+index a484255b2592..f84bc6504f64 100644
+--- a/arch/arm64/boot/dts/exynos/exynos8895.dtsi
++++ b/arch/arm64/boot/dts/exynos/exynos8895.dtsi
+@@ -41,7 +41,14 @@
+ 					fsmgr_flags = "wait";
+ 					status = "ok";
+ 				};
+-
++				efs {
++					compatible = "android,efs";
++					dev = "/dev/block/platform/11120000.ufs/by-name/EFS";
++					type = "ext4";
++					mnt_flags = "noatime,nosuid,nodev,noauto_da_alloc,discard,journal_checksum,data=ordered,errors=panic";
++					fsmgr_flags = "wait,check";
++					status = "ok";
++				};
+ 			};
+ 		};
+ 	};
+-- 
+2.17.1
+

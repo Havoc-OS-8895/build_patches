@@ -1,0 +1,28 @@
+From a0fe0f1f6fcbe07f2a7cc559f9f471aff7b7b852 Mon Sep 17 00:00:00 2001
+From: Diep Quynh <remilia.1505@gmail.com>
+Date: Sun, 26 Apr 2020 19:44:05 +0700
+Subject: [PATCH 60/60] staging: abc: Silence -Wnon-literal-null-conversion
+ warning
+
+Signed-off-by: Diep Quynh <remilia.1505@gmail.com>
+Change-Id: Iffe9bfd566c394231661fa248992409bbaf23f35
+---
+ drivers/staging/sti/abc/abc_common.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/staging/sti/abc/abc_common.c b/drivers/staging/sti/abc/abc_common.c
+index 8c1b170cc3a3..19b1b05f88c2 100644
+--- a/drivers/staging/sti/abc/abc_common.c
++++ b/drivers/staging/sti/abc/abc_common.c
+@@ -345,7 +345,7 @@ static void sec_abc_work_func(struct work_struct *work)
+ 	}
+ 	sprintf(timestamp, "TIMESTAMP=%lu", ktime_ms);
+ 	uevent_str[idx++] = &timestamp[0];
+-	uevent_str[idx] = '\0';
++	uevent_str[idx] = (char *)'\0';
+ 	strlcpy(event_type, uevent_str[1] + 6, sizeof(event_type));
+ 
+ 	ABC_PRINT("event type : %s\n", event_type);
+-- 
+2.17.1
+

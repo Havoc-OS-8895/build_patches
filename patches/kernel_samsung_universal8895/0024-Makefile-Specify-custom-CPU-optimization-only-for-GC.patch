@@ -1,0 +1,35 @@
+From b8168c75a3f514e0286b9c6cc44d2dc68a3a71e4 Mon Sep 17 00:00:00 2001
+From: Diep Quynh <remilia.1505@gmail.com>
+Date: Thu, 16 Apr 2020 13:28:24 +0700
+Subject: [PATCH 24/60] Makefile: Specify custom CPU optimization only for GCC
+
+Signed-off-by: Diep Quynh <remilia.1505@gmail.com>
+---
+ Makefile | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/Makefile b/Makefile
+index f733055218e6..33b5b4a4327e 100644
+--- a/Makefile
++++ b/Makefile
+@@ -672,8 +672,6 @@ KBUILD_CFLAGS   += -O2
+ endif
+ endif
+ 
+-KBUILD_CFLAGS   += -mcpu=exynos-m1.cortex-a53
+-
+ # Tell gcc to never replace conditional load with a non-conditional one
+ KBUILD_CFLAGS	+= $(call cc-option,--param=allow-store-data-races=0)
+ 
+@@ -756,6 +754,8 @@ KBUILD_CFLAGS += $(call cc-option, -mno-global-merge,)
+ KBUILD_CFLAGS += $(call cc-option, -fcatch-undefined-behavior)
+ else
+ 
++KBUILD_CFLAGS   += -mcpu=exynos-m1.cortex-a53
++
+ # These warnings generated too much noise in a regular build.
+ # Use make W=1 to enable them (see scripts/Makefile.extrawarn)
+ KBUILD_CFLAGS += $(call cc-disable-warning, unused-but-set-variable)
+-- 
+2.17.1
+

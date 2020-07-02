@@ -1,0 +1,42 @@
+From 175c79f4b3ad520c61c6c9d16b1166afc5385ffe Mon Sep 17 00:00:00 2001
+From: Diep Quynh <remilia.1505@gmail.com>
+Date: Sun, 26 Apr 2020 18:46:05 +0700
+Subject: [PATCH] arm64: Add configs for greatlte
+
+Signed-off-by: Diep Quynh <remilia.1505@gmail.com>
+Change-Id: I6c54969d8d94a5c2b4b86ccae721ff25f4dc5275
+---
+ arch/arm64/Kconfig.platforms                     | 4 ++++
+ arch/arm64/configs/exynos8895-greatlte_defconfig | 1 +
+ 2 files changed, 5 insertions(+)
+
+diff --git a/arch/arm64/Kconfig.platforms b/arch/arm64/Kconfig.platforms
+index 956cbde90066..c347bbd19ef3 100644
+--- a/arch/arm64/Kconfig.platforms
++++ b/arch/arm64/Kconfig.platforms
+@@ -185,6 +185,10 @@ config MODEL_DREAM2LTE
+ 	bool "Samsung Galaxy S8 Plus"
+ 	depends on SOC_EXYNOS8895
+ 
++config MODEL_GREATLTE
++	bool "Samsung Galaxy Note 8"
++	depends on SOC_EXYNOS8895
++
+ config ARCH_EXYNOS8
+ 	bool "ARMv8 based Samsung Exynos8"
+ 	select HAVE_ARM_SCU if SMP
+diff --git a/arch/arm64/configs/exynos8895-greatlte_defconfig b/arch/arm64/configs/exynos8895-greatlte_defconfig
+index dba7e8577f5a..7cfaf3ce6bec 100644
+--- a/arch/arm64/configs/exynos8895-greatlte_defconfig
++++ b/arch/arm64/configs/exynos8895-greatlte_defconfig
+@@ -43,6 +43,7 @@ CONFIG_JOURNAL_DATA_TAG=y
+ CONFIG_PARTITION_ADVANCED=y
+ # CONFIG_IOSCHED_DEADLINE is not set
+ CONFIG_SOC_EXYNOS8895=y
++CONFIG_MODEL_GREATLTE=y
+ CONFIG_ARCH_EXYNOS8=y
+ CONFIG_EXYNOS_DTBTOOL=y
+ CONFIG_PCI=y
+-- 
+2.17.1
+

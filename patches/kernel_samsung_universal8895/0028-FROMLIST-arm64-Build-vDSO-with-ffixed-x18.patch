@@ -1,0 +1,44 @@
+From 6275dbe9ee72f74da0faa7cd4ca577d2b9439e01 Mon Sep 17 00:00:00 2001
+From: Peter Collingbourne <pcc@google.com>
+Date: Tue, 6 Nov 2018 16:39:13 -0800
+Subject: [PATCH 28/60] FROMLIST: arm64: Build vDSO with -ffixed-x18
+
+The vDSO needs to be build with x18 reserved in order to accommodate
+userspace platform ABIs built on top of Linux that use the register
+to carry inter-procedural state, as provided for by the AAPCS.
+An example of such a platform ABI is the one that will be used by an
+upcoming version of Android.
+
+Although this change is currently a no-op due to the fact that the vDSO
+is currently implemented in pure assembly on arm64, it is necessary
+in order to prepare for another change [1] that will add C code to
+the vDSO.
+
+[1] https://patchwork.kernel.org/patch/10044501/
+
+Change-Id: Icaac4b1c9127d81d754d3b8688274e9afc781760
+Signed-off-by: Peter Collingbourne <pcc@google.com>
+Signed-off-by: Vincenzo Frascino <vincenzo.frascino@arm.com>
+Cc: Mark Salyzyn <salyzyn@google.com>
+Cc: Will Deacon <will.deacon@arm.com>
+Cc: linux-arm-kernel@lists.infradead.org
+---
+ arch/arm64/kernel/vdso/Makefile | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/arm64/kernel/vdso/Makefile b/arch/arm64/kernel/vdso/Makefile
+index 83deb2a47de5..4adcb532ac6a 100644
+--- a/arch/arm64/kernel/vdso/Makefile
++++ b/arch/arm64/kernel/vdso/Makefile
+@@ -15,7 +15,7 @@ obj-vdso-c := $(addprefix $(obj)/, $(obj-vdso-c))
+ obj-vdso   := $(obj-vdso-c) $(obj-vdso-s)
+ 
+ ccflags-y := -shared -fno-common -fno-builtin -fno-stack-protector
+-ccflags-y += -DDISABLE_BRANCH_PROFILING
++ccflags-y += -DDISABLE_BRANCH_PROFILING -ffixed-x18
+ ccflags-y += -nostdlib -Wl,-soname=linux-vdso.so.1 \
+ 		$(call cc-ldoption, -Wl$(comma)--hash-style=sysv)
+ 
+-- 
+2.17.1
+
