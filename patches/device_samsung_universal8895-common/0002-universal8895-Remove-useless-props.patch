@@ -69,7 +69,7 @@ index 524bde7..5c2450b 100644
 -    ro.cfg.custom_tm_limit=1000 \
 -    ro.cfg.custom_sw_limit=275 \
 -    ro.cfg.enable_reentry_lmk=true \
-+    ro.sf.lcd_density=560 \
++    ro.sf.lcd_density=480 \
      sys.use_fifo_ui=0 \
 -    ro.config.systemaudiodebug=abox&codecdsp \
      ro.gfx.driver.0=com.samsung.gpudriver.S8MaliG71_90 \
