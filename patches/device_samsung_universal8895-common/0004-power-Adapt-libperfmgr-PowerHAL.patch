@@ -80,7 +80,7 @@ index d5e52ce..cf03190 100644
 -        </interface>
 -    </hal>
      <hal format="hidl">
-         <name>vendor.lineage.trust</name>
+         <name>vendor.samsung.hardware.gnss</name>
          <transport>hwbinder</transport>
 diff --git a/power-libperfmgr/Android.bp b/power-libperfmgr/Android.bp
 new file mode 100644
