@@ -1,0 +1,26 @@
+From ac15ab650d7569855e57f1a80c1a5ad89757a8bf Mon Sep 17 00:00:00 2001
+From: EugW <wug.bond@gmail.com>
+Date: Mon, 6 Jul 2020 12:33:34 +0500
+Subject: [PATCH] remove AdvancedDisplay and doze
+
+---
+ Android.mk | 2 --
+ 1 file changed, 2 deletions(-)
+
+diff --git a/Android.mk b/Android.mk
+index d9efe58..09ce048 100644
+--- a/Android.mk
++++ b/Android.mk
+@@ -41,9 +41,7 @@ include $(SAM_ROOT)/loki_tool/Android.mk
+ endif
+ 
+ ifeq ($(BOARD_VENDOR),samsung)
+-include $(SAM_ROOT)/AdvancedDisplay/Android.mk
+ include $(SAM_ROOT)/audio/Android.mk
+-include $(SAM_ROOT)/doze/Android.mk
+ include $(SAM_ROOT)/dtbhtool/Android.mk
+ include $(SAM_ROOT)/hidl/Android.mk
+ include $(SAM_ROOT)/modemloader/Android.mk
+-- 
+2.25.1
+
