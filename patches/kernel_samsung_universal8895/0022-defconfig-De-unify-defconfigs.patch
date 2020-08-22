@@ -7,9 +7,9 @@ Signed-off-by: Diep Quynh <remilia.1505@gmail.com>
 Change-Id: I863d35bede1ebdadd88e3189bd97c648c72d9e64
 ---
  ...fconfig => exynos8895-dream2lte_defconfig} |   0
- .../configs/exynos8895-dreamlte_defconfig     | 733 ++++++++++++++++++
+ .../configs/exynos8895-dreamlte_defconfig     | 730 ++++++++++++++++++
  ...efconfig => exynos8895-greatlte_defconfig} |   0
- 3 files changed, 733 insertions(+)
+ 3 files changed, 730 insertions(+)
  rename arch/arm64/configs/{exynos8895_dreamlte_dream2lte_defconfig => exynos8895-dream2lte_defconfig} (100%)
  create mode 100644 arch/arm64/configs/exynos8895-dreamlte_defconfig
  rename arch/arm64/configs/{exynos8895_greatlte_defconfig => exynos8895-greatlte_defconfig} (100%)
@@ -23,7 +23,7 @@ new file mode 100644
 index 000000000000..6ba29c8b30ac
 --- /dev/null
 +++ b/arch/arm64/configs/exynos8895-dreamlte_defconfig
-@@ -0,0 +1,733 @@
+@@ -0,0 +1,730 @@
 +# CONFIG_LOCALVERSION_AUTO is not set
 +CONFIG_NO_HZ=y
 +CONFIG_HIGH_RES_TIMERS=y
@@ -59,7 +59,6 @@ index 000000000000..6ba29c8b30ac
 +# CONFIG_COMPAT_BRK is not set
 +CONFIG_DEFERRED_INITCALLS=y
 +CONFIG_PROFILING=y
-+CONFIG_CC_STACKPROTECTOR_STRONG=y
 +# CONFIG_BLK_DEV_BSG is not set
 +CONFIG_JOURNAL_DATA_TAG=y
 +CONFIG_PARTITION_ADVANCED=y
@@ -80,7 +79,6 @@ index 000000000000..6ba29c8b30ac
 +CONFIG_RELOCATABLE_KERNEL=y
 +CONFIG_PREEMPT=y
 +CONFIG_ZSMALLOC=y
-+CONFIG_PGTABLE_MAPPING=y
 +CONFIG_ZSMALLOC_STAT=y
 +# CONFIG_SWAP_ENABLE_READAHEAD is not set
 +CONFIG_HPA=y
@@ -350,8 +348,6 @@ index 000000000000..6ba29c8b30ac
 +CONFIG_SERIAL_SAMSUNG=y
 +CONFIG_SERIAL_SAMSUNG_CONSOLE=y
 +# CONFIG_HW_RANDOM_EXYNOS is not set
-+CONFIG_EXYRNG_FIPS_COMPLIANCE=y
-+CONFIG_EXYRNG_FAIL_POLICY_RESET=y
 +CONFIG_EXYRNG_USE_CRYPTOMANAGER=y
 +CONFIG_I2C_CHARDEV=y
 +CONFIG_I2C_GPIO=y
@@ -709,6 +705,9 @@ index 000000000000..6ba29c8b30ac
 +CONFIG_EXT4_FS_SECURITY=y
 +CONFIG_EXT4_ENCRYPTION=y
 +CONFIG_EXT4_SEC_CRYPTO_EXTENSION=y
++CONFIG_F2FS_FS=y
++CONFIG_F2FS_FS_SECURITY=y
++CONFIG_F2FS_FS_ENCRYPTION=y
 +CONFIG_QUOTA=y
 +CONFIG_QUOTA_NETLINK_INTERFACE=y
 +CONFIG_QFMT_V2=y
@@ -745,14 +744,12 @@ index 000000000000..6ba29c8b30ac
 +CONFIG_MST_LDO=y
 +CONFIG_MFC_CHARGER=y
 +CONFIG_SECURITY_DSMS=y
-+CONFIG_CRYPTO_FIPS=y
 +# CONFIG_CRYPTO_MANAGER_DISABLE_TESTS is not set
 +CONFIG_CRYPTO_GCM=y
 +CONFIG_CRYPTO_SHA512=y
 +CONFIG_CRYPTO_TWOFISH=y
 +CONFIG_CRYPTO_ZSTD=y
 +CONFIG_CRYPTO_POST_LATE_INIT_SYNC=y
-+CONFIG_FIPS_FMP=y
 +CONFIG_ARM64_CRYPTO=y
 +CONFIG_CRYPTO_SHA1_ARM64_CE=y
 +CONFIG_CRYPTO_SHA2_ARM64_CE=y
